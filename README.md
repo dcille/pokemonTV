@@ -1,4 +1,4 @@
-# Maratón de Ash
+# La Ruta de Ash
 
 Página de fans para ver de principio a fin el viaje de Ash en el anime de Pokémon: las 25 temporadas y el arco final, 1219 capítulos.
 

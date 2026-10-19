@@ -1,6 +1,6 @@
 {
-  "name": "Maratón de Ash",
-  "short_name": "Maratón Ash",
+  "name": "La Ruta de Ash",
+  "short_name": "Ruta de Ash",
   "description": "Las 25 temporadas de Ash con reproductor, fichas de cada capítulo, medallas y buscador por etiquetas.",
   "lang": "es",
   "start_url": "./",
