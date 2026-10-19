@@ -1,0 +1,1522 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Maratón de Ash</title>
+<meta name="description" content="Las 25 temporadas de Ash con reproductor, fichas de cada capítulo, medallas y buscador por etiquetas.">
+<meta name="theme-color" content="#dc0a2d">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Maratón Ash">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Figtree:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Pixelify+Sans:wght@500&display=swap">
+<style>
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); -webkit-text-size-adjust: 100%; }
+body { margin: 0; font: 14px system-ui, -apple-system, "Segoe UI", sans-serif; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+
+/* Layout: streaming home — sticky bar, "continúa tu viaje" hero with a region-coloured journey strip, then one horizontal rail of season posters per series; a season opens as a sheet with its episodes. Dark-first. */
+:root {
+  --bg: #0d1120;
+  --surface: #161b2e;
+  --surface-2: #1f2640;
+  --line: #2b3352;
+  --fg: #eef0f7;
+  --muted: #9aa3c0;
+  --accent: #ffcb3d;
+  --accent-ink: #1d1600;
+  --accent-text: #ffd45c;
+  --free: #4fd18b;
+  --soon: #f0a35e;
+  --font-display: "Lilita One", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+  --font-body: "Figtree", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "DM Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --radius: 14px;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f1f2f8; --surface: #ffffff; --surface-2: #e7eaf4; --line: #d3d8e7;
+    --fg: #141828; --muted: #586079; --accent: #ffcb3d; --accent-ink: #1d1600;
+    --accent-text: #8a5f00; --free: #17804b; --soon: #a9581a; color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #f1f2f8; --surface: #ffffff; --surface-2: #e7eaf4; --line: #d3d8e7;
+  --fg: #141828; --muted: #586079; --accent: #ffcb3d; --accent-ink: #1d1600;
+  --accent-text: #8a5f00; --free: #17804b; --soon: #a9581a; color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px);
+  z-index: 10; background: var(--bg);
+}
+.wrap {
+  max-width: 1240px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+h1, h2, h3 { font-family: var(--font-display); font-weight: 400; letter-spacing: .01em; text-wrap: balance; margin: 0; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+
+/* Top bar */
+.bar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.bar-inner { display: flex; align-items: center; gap: 16px; padding-block: 12px; flex-wrap: wrap; }
+.brand { font-family: var(--font-display); font-size: 24px; line-height: 1; display: flex; align-items: center; gap: 10px; }
+.brand-mark { width: 26px; height: 26px; flex: none; }
+.search { flex: 1 1 260px; display: flex; min-width: 0; }
+.search input {
+  width: 100%; min-width: 0; font: inherit; color: var(--fg);
+  background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+  padding: 9px 16px;
+}
+.search input::placeholder { color: var(--muted); }
+.sync { font-size: 12.5px; color: var(--muted); display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+.sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.sync[data-mode="cloud"] .sync-dot { background: var(--free); }
+.sync[data-mode="saving"] .sync-dot { background: var(--accent); }
+
+/* Hero */
+.hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 28px; padding-block: 32px 8px; align-items: center; }
+.eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--accent-text); }
+.hero h1 { font-size: clamp(34px, 6vw, 58px); line-height: .98; margin-top: 8px; }
+.hero p { color: var(--muted); max-width: 52ch; margin: 14px 0 0; }
+.next {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 20px;
+  overflow: hidden; display: grid;
+}
+.next-art {
+  position: relative; aspect-ratio: 16 / 6; max-width: 100%; display: flex; align-items: flex-end; padding: 16px 18px; color: #fff;
+  background:
+    radial-gradient(circle at 110% -30%, transparent 40%, rgba(255,255,255,.16) 40.5%, rgba(255,255,255,.16) 43%, transparent 43.5%),
+    linear-gradient(135deg, var(--c1), var(--c2));
+}
+.next-art .big { position: absolute; right: 14px; top: 2px; font-family: var(--font-display); font-size: 88px; line-height: 1; opacity: .28; }
+.next-art .t { font-family: var(--font-display); font-size: 24px; line-height: 1.05; text-shadow: 0 1px 12px rgba(0,0,0,.35); position: relative; }
+.next-body { padding: 16px 18px 18px; display: grid; gap: 12px; }
+.next-meta { display: grid; gap: 4px; }
+.next-title { font-size: 20px; line-height: 1.2; text-wrap: balance; }
+.code { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); letter-spacing: .02em; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 8px; justify-content: center;
+  font: inherit; font-weight: 700; font-size: 14px; text-decoration: none; cursor: pointer;
+  border-radius: 999px; padding: 9px 18px; border: 1px solid transparent;
+  background: var(--accent); color: var(--accent-ink);
+}
+.btn:hover { filter: brightness(1.06); }
+.btn.ghost { background: transparent; color: var(--fg); border-color: var(--line); }
+.btn.ghost:hover { background: var(--surface-2); filter: none; }
+.btn.small { padding: 6px 13px; font-size: 13px; }
+.btn svg { width: 16px; height: 16px; flex: none; }
+
+/* Journey strip */
+.journey { padding-block: 22px 6px; display: grid; gap: 10px; }
+.journey-head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+.journey-head b { color: var(--fg); font-variant-numeric: tabular-nums; }
+.strip { display: flex; gap: 3px; height: 16px; }
+.seg {
+  position: relative; flex-basis: 0; min-width: 3px; border: 0; padding: 0; cursor: pointer;
+  border-radius: 4px; overflow: hidden; background: var(--surface-2);
+}
+.seg::before { content: ""; position: absolute; inset: 0; background: var(--c1); opacity: .32; }
+.seg i { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, var(--c1), var(--c2)); }
+.regions { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--muted); }
+.regions span { display: inline-flex; align-items: center; gap: 6px; }
+.regions span::before { content: ""; width: 10px; height: 10px; border-radius: 3px; background: linear-gradient(135deg, var(--c1), var(--c2)); }
+
+/* Tip */
+.tip {
+  margin-block: 22px 4px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: start;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px;
+}
+.tip svg { width: 22px; height: 22px; color: var(--accent-text); margin-top: 2px; }
+.tip p { margin: 0; font-size: 14px; }
+.tip p + p { margin-top: 4px; color: var(--muted); font-size: 13px; }
+
+/* Filters */
+.filters { display: flex; gap: 8px; flex-wrap: wrap; padding-block: 22px 4px; }
+.chip {
+  font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+  border-radius: 999px; padding: 6px 14px; border: 1px solid var(--line);
+  background: transparent; color: var(--muted);
+}
+.chip[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+
+/* Rails */
+.row { padding-block: 20px 4px; }
+.row-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.row-head h2 { font-size: 24px; }
+.row-head span { color: var(--muted); font-size: 13.5px; }
+.rail {
+  display: flex; gap: 14px; overflow-x: auto; padding-block: 12px 14px;
+  scroll-snap-type: x proximity; scrollbar-width: thin;
+}
+.poster {
+  flex: 0 0 auto; width: 168px; aspect-ratio: 3 / 4; max-width: 100%;
+  position: relative; display: flex; flex-direction: column; justify-content: flex-end;
+  padding: 12px; border: 0; border-radius: var(--radius); cursor: pointer; text-align: left;
+  color: #fff; font: inherit; overflow: hidden; scroll-snap-align: start;
+  background:
+    radial-gradient(circle at 115% -10%, transparent 38%, rgba(255,255,255,.16) 38.5%, rgba(255,255,255,.16) 41%, transparent 41.5%),
+    linear-gradient(160deg, var(--c1), var(--c2));
+  box-shadow: 0 1px 0 rgba(255,255,255,.08) inset;
+}
+.poster::after { content: ""; position: absolute; inset: 40% 0 0; background: linear-gradient(transparent, rgba(0,0,0,.45)); pointer-events: none; }
+.poster > * { position: relative; z-index: 1; }
+.poster-num { position: absolute; top: 6px; left: 12px; font-family: var(--font-display); font-size: 54px; line-height: 1; opacity: .9; text-shadow: 0 2px 14px rgba(0,0,0,.25); }
+.badge {
+  position: absolute; top: 12px; right: 10px; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 999px; background: rgba(0,0,0,.42); color: #fff;
+}
+.badge.free::before, .badge.part::before, .badge.soon::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 5px; vertical-align: 1px; }
+.badge.free::before { background: #5be39a; }
+.badge.soon::before { background: #ffb36b; }
+.badge.part::before { background: #ffd45c; }
+.poster-title { font-family: var(--font-display); font-size: 18px; line-height: 1.05; text-shadow: 0 1px 10px rgba(0,0,0,.35); }
+.poster-meta { font-size: 12px; opacity: .92; margin-top: 4px; }
+.poster-bar { height: 4px; border-radius: 2px; background: rgba(255,255,255,.28); margin-top: 10px; overflow: hidden; }
+.poster-bar i { display: block; height: 100%; background: #fff; }
+.poster:hover { transform: translateY(-2px); }
+@media (prefers-reduced-motion: no-preference) { .poster { transition: transform .18s ease; } }
+.empty { color: var(--muted); padding-block: 30px; }
+
+footer { color: var(--muted); font-size: 12.5px; padding-block: 40px 48px; border-top: 1px solid var(--line); margin-top: 36px; display: grid; gap: 8px; }
+footer p { margin: 0; max-width: 80ch; }
+
+/* Season sheet */
+dialog.sheet {
+  width: min(980px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 48px);
+  padding: 0; border: 1px solid var(--line); border-radius: 20px;
+  background: var(--bg); color: var(--fg); overflow: hidden;
+}
+dialog.sheet[open] { display: flex; flex-direction: column; }
+dialog.sheet::backdrop { background: rgba(4, 6, 14, .72); }
+.sheet-head {
+  position: relative; color: #fff; padding: 22px 22px 18px;
+  background:
+    radial-gradient(circle at 105% -40%, transparent 40%, rgba(255,255,255,.14) 40.5%, rgba(255,255,255,.14) 43%, transparent 43.5%),
+    linear-gradient(135deg, var(--c1), var(--c2));
+  display: grid; gap: 6px;
+}
+.sheet-head .eyebrow { color: rgba(255,255,255,.85); }
+.sheet-head h2 { font-size: clamp(26px, 4.5vw, 38px); line-height: 1; padding-right: 40px; }
+.sheet-head .sub { font-size: 13.5px; opacity: .92; }
+.close {
+  position: absolute; top: 14px; right: 14px; width: 36px; height: 36px; border-radius: 50%;
+  border: 0; background: rgba(0,0,0,.35); color: #fff; cursor: pointer; display: grid; place-items: center;
+}
+.close svg { width: 18px; height: 18px; }
+.sheet-tools { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; padding: 14px 22px; border-bottom: 1px solid var(--line); background: var(--surface); }
+.sheet-tools .prog { margin-left: auto; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.sheet-note { margin: 0; padding: 12px 22px 0; font-size: 13px; color: var(--muted); }
+.sheet-note b { color: var(--soon); }
+.eps { list-style: none; margin: 0; padding: 14px 22px 26px; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 8px; }
+.ep {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 6px 12px; align-items: center;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px;
+}
+.ep.is-last { border-color: var(--accent); }
+.ep.flash { box-shadow: 0 0 0 3px var(--accent); }
+.ep-check { display: flex; align-items: center; gap: 10px; cursor: pointer; min-width: 0; }
+.ep-check input { width: 18px; height: 18px; accent-color: var(--free); flex: none; margin: 0; }
+.ep-name { display: grid; min-width: 0; line-height: 1.25; }
+.ep-name b { font-weight: 600; }
+.ep.watched .ep-name b { color: var(--muted); }
+.ep-actions { display: flex; gap: 6px; align-items: center; }
+.icon-btn {
+  width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line); background: transparent;
+  color: var(--muted); cursor: pointer; display: grid; place-items: center; flex: none;
+}
+.icon-btn svg { width: 15px; height: 15px; }
+.icon-btn[aria-pressed="true"], .icon-btn.has-link { color: var(--accent-text); border-color: var(--accent-text); }
+.ep-link { grid-column: 1 / -1; display: flex; gap: 6px; flex-wrap: wrap; }
+.ep-link input {
+  flex: 1 1 180px; min-width: 0; font: inherit; font-size: 13px; color: var(--fg);
+  background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px;
+}
+.ep-link .err { flex-basis: 100%; font-size: 12px; color: var(--soon); }
+
+@media (max-width: 760px) {
+  .hero { grid-template-columns: minmax(0, 1fr); padding-block: 22px 4px; gap: 20px; }
+  .poster { width: 138px; }
+  .poster-num { font-size: 44px; }
+  .poster-title { font-size: 16px; }
+  .sync { order: 3; }
+}
+@media (max-width: 600px) {
+  dialog.sheet {
+    width: 100vw; height: 100dvh; max-height: 100dvh; margin: 0; border-radius: 0; border: 0;
+  }
+  .sheet-head { padding-top: calc(18px + env(safe-area-inset-top, 0px)); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .close { top: calc(12px + env(safe-area-inset-top, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); }
+  .sheet-tools, .sheet-note { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .eps { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-bottom: calc(26px + env(safe-area-inset-bottom, 0px)); grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Season rows: checkbox, title button, watch link */
+.ep > input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--free); margin: 0; }
+.ep-open { background: none; border: 0; padding: 0; margin: 0; color: inherit; font: inherit; text-align: left; cursor: pointer; display: grid; gap: 2px; min-width: 0; line-height: 1.25; }
+.ep-open b { font-weight: 600; }
+.ep-open:hover b { text-decoration: underline; text-underline-offset: 3px; }
+.ep.watched .ep-open b { color: var(--muted); }
+.next-title { background: none; border: 0; padding: 0; color: inherit; font: inherit; font-weight: 700; font-size: 20px; line-height: 1.2; text-align: left; cursor: pointer; }
+.next-title:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* Tags */
+.ep-tags, .tag-list { display: flex; flex-wrap: wrap; gap: 4px 6px; margin-top: 4px; }
+.tag { display: inline-flex; align-items: center; font: inherit; font-size: 11.5px; font-weight: 600; line-height: 1.5; border-radius: 999px; padding: 1px 9px; border: 1px solid var(--line); color: var(--muted); background: transparent; }
+button.tag { cursor: pointer; }
+button.tag:hover { background: var(--surface-2); }
+.tag-e { color: var(--accent-text); border-color: color-mix(in srgb, var(--accent-text) 45%, transparent); }
+.tag-l { color: var(--free); border-color: color-mix(in srgb, var(--free) 45%, transparent); }
+.tag-c { color: var(--fg); }
+.tag-list .tag, .tag-sugg .tag, .active-tag .tag { font-size: 13px; padding: 4px 12px; }
+.tag .n { opacity: .7; font-weight: 500; margin-left: 6px; font-variant-numeric: tabular-nums; }
+.tag-sugg { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 12px; }
+.active-tag { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.hits-count { margin: 10px 0 0; color: var(--muted); font-size: 13px; }
+.more-row { padding-top: 12px; }
+
+/* Episode card */
+dialog.epd { width: min(760px, calc(100vw - 32px)); overflow-y: auto; }
+dialog.epd[open] { display: block; }
+.epd-head {
+  position: relative; overflow: hidden; color: #fff; padding: 22px 22px 18px; display: grid; gap: 6px;
+  background:
+    radial-gradient(circle at 105% -40%, transparent 40%, rgba(255,255,255,.14) 40.5%, rgba(255,255,255,.14) 43%, transparent 43.5%),
+    linear-gradient(135deg, var(--c1), var(--c2));
+}
+.epd-head > * { position: relative; }
+.epd-head .epd-num { position: absolute; right: 70px; bottom: -22px; font-family: var(--font-display); font-size: 120px; line-height: 1; opacity: .2; }
+.epd-head .eyebrow { color: rgba(255,255,255,.88); }
+.epd-head h2 { font-size: clamp(24px, 4.2vw, 34px); line-height: 1.05; padding-right: 44px; }
+.epd-head .sub { font-size: 13.5px; opacity: .92; }
+.epd-head .close { position: absolute; }
+.epd-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; padding: 14px 22px; background: var(--surface); border-bottom: 1px solid var(--line); }
+.epd-actions .btn[aria-pressed="true"] { color: var(--free); border-color: var(--free); }
+.epd-nav { margin-left: auto; display: flex; gap: 6px; }
+.icon-btn[disabled] { opacity: .35; cursor: default; }
+.epd-body { padding: 18px 22px 28px; display: grid; gap: 24px; }
+.epd-loading, .epd-note { color: var(--muted); margin: 0; font-size: 13.5px; }
+.epd-sec { display: grid; gap: 10px; min-width: 0; }
+.epd-sec h3 { font-family: var(--font-display); font-weight: 400; font-size: 21px; margin: 0; }
+.epd-sec h4 { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 6px 0 0; }
+.story p { margin: 0 0 10px; max-width: 68ch; }
+.story ul, .curios { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 68ch; }
+.spoiler-gate { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; background: var(--surface); border: 1px dashed var(--line); border-radius: 12px; padding: 12px 14px; }
+.spoiler-gate p { margin: 0; flex-basis: 100%; color: var(--muted); font-size: 13.5px; }
+.always { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; color: var(--muted); cursor: pointer; }
+.always input { margin: 0; accent-color: var(--accent); }
+.mons { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+.mon { position: relative; width: 100%; text-align: left; font: inherit; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 7px 10px; cursor: pointer; display: grid; gap: 1px; }
+.mon:hover { background: var(--surface-2); }
+.mon b { font-weight: 600; font-size: 14px; padding-right: 42px; }
+.mon span { font-size: 12px; color: var(--muted); line-height: 1.3; }
+.mon i { position: absolute; top: 8px; right: 8px; font-style: normal; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--accent-text); }
+.quien { display: flex; gap: 6px 14px; align-items: baseline; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+.quien span { color: var(--muted); font-size: 13.5px; }
+.quien b { font-family: var(--font-display); font-weight: 400; font-size: 22px; }
+details.epd-link summary { cursor: pointer; color: var(--muted); font-size: 13.5px; }
+details.epd-link .ep-link { margin-top: 10px; }
+.epd-src { margin: 0; font-size: 12.5px; color: var(--muted); }
+@media (max-width: 600px) {
+  dialog.epd { width: 100vw; height: 100dvh; max-height: 100dvh; margin: 0; border-radius: 0; border: 0; }
+  .epd-head { padding-top: calc(18px + env(safe-area-inset-top, 0px)); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .epd-actions, .epd-body { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .epd-body { padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px)); }
+  .epd-nav { margin-left: 0; }
+}
+
+/* Episode search results */
+.hits { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 8px; }
+.hit {
+  width: 100%; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: center; text-align: left;
+  font: inherit; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; cursor: pointer;
+}
+.hit:hover { background: var(--surface-2); }
+.hit-tag { font-family: var(--font-display); color: #fff; font-size: 15px; padding: 6px 8px; border-radius: 8px; min-width: 46px; text-align: center; background: linear-gradient(135deg, var(--c1), var(--c2)); }
+.hit-text { display: grid; min-width: 0; line-height: 1.25; }
+.hit-text b { font-weight: 600; }
+.hit.watched b { color: var(--muted); }
+
+/* ===== Pokémon touches: Pokédex header, Poké Ball checks, medals, eyecatch ===== */
+:root {
+  --dex: #dc0a2d;
+  --dex-deep: #9b0820;
+  --lens: #35b4ee;
+  --ball: #e3350d;
+  --ball-line: #1b1b22;
+  --font-pixel: "Pixelify Sans", var(--font-mono);
+  --pokeball-mark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke='white' stroke-opacity='.2' stroke-width='6'%3E%3Ccircle cx='50' cy='50' r='44'/%3E%3Cpath d='M6 50h29M65 50h29'/%3E%3Ccircle cx='50' cy='50' r='14'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Pokédex header bar */
+body::before { background: var(--dex); }
+.bar {
+  background: var(--dex); color: #fff; border-bottom: 4px solid var(--dex-deep);
+  box-shadow: 0 3px 0 rgba(0,0,0,.18); backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+.brand { color: #fff; gap: 12px; text-shadow: 0 2px 0 rgba(0,0,0,.18); }
+.lens {
+  width: 30px; height: 30px; border-radius: 50%; flex: none; border: 3px solid #fff;
+  background: radial-gradient(circle at 34% 32%, #d9f4ff 0 16%, var(--lens) 22% 62%, #0b5f93 100%);
+  box-shadow: 0 0 0 2px var(--dex-deep), inset 0 -3px 6px rgba(0,0,0,.25);
+}
+.leds { display: inline-flex; gap: 5px; align-self: flex-start; margin-top: 2px; }
+.leds i { width: 8px; height: 8px; border-radius: 50%; border: 1px solid rgba(0,0,0,.35); background: #ff5a5a; }
+.leds i:nth-child(2) { background: #ffd84a; }
+.leds i:nth-child(3) { background: #4fdc78; }
+.bar .search input { background: #fff; color: #17171c; border: 2px solid var(--dex-deep); }
+.bar .search input::placeholder { color: #6a6a74; }
+.bar .sync { color: rgba(255,255,255,.9); }
+.bar .sync-dot { background: rgba(255,255,255,.6); }
+.bar :focus-visible { outline-color: #ffde4a; }
+
+/* Poké Ball watermark on season art */
+.poster, .sheet-head {
+  background: var(--pokeball-mark) no-repeat right -34px top -34px / 150px 150px, linear-gradient(160deg, var(--c1), var(--c2));
+}
+.sheet-head { background-size: 190px 190px, auto; background-position: right -40px top -60px, 0 0; }
+.next-art {
+  background: var(--pokeball-mark) no-repeat right -40px top -50px / 200px 200px, linear-gradient(135deg, var(--c1), var(--c2));
+  overflow: hidden;
+}
+.next-thumb { position: absolute; inset: 0; background-repeat: no-repeat; }
+.next-art::after { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent 40%, rgba(0,0,0,.6)); }
+.next-art .t, .next-art .big { z-index: 1; }
+.badge.done { background: #ffcb05; color: #1d1600; }
+.badge.done::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 5px; vertical-align: 0; background: #1d1600; clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
+
+/* Poké Ball checkbox */
+input.ball {
+  -webkit-appearance: none; appearance: none; margin: 0; flex: none; cursor: pointer;
+  width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--muted);
+  background:
+    radial-gradient(circle, var(--surface) 0 3px, var(--muted) 3.5px 5.5px, transparent 6px),
+    linear-gradient(transparent calc(50% - 1px), var(--muted) calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px));
+  opacity: .55;
+}
+input.ball:hover { opacity: .9; }
+input.ball:checked {
+  opacity: 1; border-color: var(--ball-line);
+  background:
+    radial-gradient(circle, #fff 0 3px, var(--ball-line) 3.5px 6px, transparent 6.5px),
+    linear-gradient(var(--ball) 0 calc(50% - 1.5px), var(--ball-line) calc(50% - 1.5px) calc(50% + 1.5px), #f4f4f4 calc(50% + 1.5px));
+}
+@media (prefers-reduced-motion: no-preference) {
+  input.ball.caught { animation: catch .9s ease-in-out; }
+  @keyframes catch {
+    0% { transform: rotate(0); } 12% { transform: rotate(-22deg); } 24% { transform: rotate(16deg); }
+    36% { transform: rotate(-12deg); } 48% { transform: rotate(8deg); } 60%, 100% { transform: rotate(0); }
+  }
+}
+
+/* Season rows with thumbnails */
+.ep { grid-template-columns: auto auto minmax(0, 1fr) auto; }
+.ep-thumb {
+  width: 96px; aspect-ratio: 16 / 9; max-width: 100%; border-radius: 8px; background-color: var(--surface-2);
+  background-repeat: no-repeat; cursor: pointer; display: grid; place-items: center;
+  color: #fff; font-family: var(--font-display); font-size: 20px;
+}
+.ep-thumb.none { background: linear-gradient(135deg, var(--c1), var(--c2)); opacity: .85; }
+.watch svg { width: 14px; height: 14px; }
+.eps { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+
+/* Medals */
+.medals-wrap { display: grid; gap: 8px; padding-top: 6px; }
+.medals-head { display: flex; gap: 8px 12px; align-items: baseline; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+.medals-head b { color: var(--fg); font-family: var(--font-display); font-weight: 400; font-size: 18px; }
+.medals-head #medalCount { font-family: var(--font-pixel); color: var(--fg); }
+.medals { display: flex; flex-wrap: wrap; gap: 6px; }
+.medal { width: 30px; height: 30px; border: 0; padding: 0; background: none; cursor: pointer; }
+.medal svg { width: 100%; height: 100%; display: block; }
+.medal .shape { fill: transparent; stroke: var(--line); stroke-width: 1.6; }
+.medal.got .shape { stroke: rgba(0,0,0,.35); }
+.medal.got .shine { fill: rgba(255,255,255,.45); }
+.medal:hover .shape { stroke: var(--muted); }
+
+/* Pokédex episode card */
+.epd-head {
+  background: var(--pokeball-mark) no-repeat right -60px bottom -80px / 240px 240px, linear-gradient(180deg, var(--dex), var(--dex-deep));
+  gap: 14px; padding-bottom: 20px;
+}
+.dex-top { display: flex; align-items: center; gap: 12px; }
+.dex-top .lens { width: 40px; height: 40px; }
+.dex-label { font-family: var(--font-pixel); font-size: 13px; letter-spacing: .06em; text-transform: uppercase; opacity: .9; }
+.dex-main { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 18px; align-items: center; }
+.screen {
+  background: #e9ecef; padding: 10px 10px 18px; border-radius: 10px 10px 10px 30px;
+  box-shadow: 0 0 0 2px rgba(0,0,0,.25), inset 0 -4px 0 rgba(0,0,0,.08);
+}
+.screen-img {
+  aspect-ratio: 16 / 9; max-width: 100%; border-radius: 4px; background-color: #0e1320;
+  background-repeat: no-repeat; box-shadow: inset 0 0 0 2px #2a2f3a; display: grid; place-items: center;
+}
+.screen-img.none { background: linear-gradient(135deg, var(--c1), var(--c2)); color: #fff; font-family: var(--font-display); font-size: 56px; }
+.dex-text { display: grid; gap: 6px; min-width: 0; }
+.epd-head h2 { padding-right: 0; }
+.epd-head .close { top: 14px; right: 14px; }
+.epd-actions .btn svg { width: 18px; height: 18px; }
+
+/* Loading Poké Ball */
+.loading { display: flex; align-items: center; gap: 10px; }
+.loading::before {
+  content: ""; width: 20px; height: 20px; border-radius: 50%; flex: none; border: 2px solid var(--ball-line);
+  background: radial-gradient(circle, #fff 0 2px, var(--ball-line) 2.5px 4.5px, transparent 5px),
+    linear-gradient(var(--ball) 0 calc(50% - 1px), var(--ball-line) calc(50% - 1px) calc(50% + 1px), #f4f4f4 calc(50% + 1px));
+}
+@media (prefers-reduced-motion: no-preference) {
+  .loading::before { animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+}
+
+/* "¿Quién es ese Pokémon?" eyecatch */
+.quien {
+  position: relative; overflow: hidden; display: grid; justify-items: start; gap: 10px;
+  border: 0; border-radius: 14px; padding: 18px 18px 20px; color: #fff;
+  background: repeating-conic-gradient(from 0deg at 18% 50%, #1b5cc4 0deg 9deg, #2f86e8 9deg 18deg);
+}
+.quien .q-title {
+  font-family: var(--font-display); font-size: 24px; line-height: 1; color: #ffde4a;
+  -webkit-text-stroke: 1.5px #1d3d8f; text-shadow: 0 3px 0 #1d3d8f; font-size: clamp(22px, 4vw, 28px);
+}
+.q-reveal {
+  font: inherit; font-weight: 700; font-size: 14px; cursor: pointer; border-radius: 999px; padding: 8px 18px;
+  background: #fff; color: #1b3f98; border: 0; box-shadow: 0 3px 0 #133076;
+}
+.q-answer { font-family: var(--font-display); font-weight: 400; font-size: 30px; color: #fff; text-shadow: 0 3px 0 #133076; }
+@media (prefers-reduced-motion: no-preference) {
+  .q-answer:not([hidden]) { animation: pop .35s ease-out; }
+  @keyframes pop { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+}
+
+/* Toast */
+.toast {
+  position: fixed; inset: auto auto auto 50%; margin: 0; border: 0; transform: translateX(-50%); z-index: 20;
+  bottom: calc(18px + env(safe-area-inset-bottom, 0px)); max-width: calc(100vw - 32px);
+  display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-radius: 14px;
+  background: #ffcb05; color: #1d1600; font-weight: 700; box-shadow: 0 4px 0 #b38a00, 0 10px 30px rgba(0,0,0,.3);
+}
+
+@media (max-width: 760px) {
+  .dex-main { grid-template-columns: minmax(0, 1fr); }
+  .screen { max-width: 360px; }
+}
+@media (max-width: 600px) {
+  .eps { grid-template-columns: minmax(0, 1fr); }
+  .ep { gap: 6px 10px; }
+  .ep-thumb { width: 76px; font-size: 16px; }
+  .watch { padding: 8px; }
+  .watch .watch-txt { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .leds { display: none; }
+  .bar .brand .leds { display: none; }
+}
+
+/* ===== Built-in player: a Pokédex with a big screen ===== */
+dialog.player {
+  width: min(1040px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); overflow-y: auto;
+  padding: 0; border: 0; border-radius: 22px; color: #fff;
+  background: var(--pokeball-mark) no-repeat right -80px bottom -90px / 300px 300px, linear-gradient(180deg, var(--dex), var(--dex-deep));
+  box-shadow: 0 0 0 3px var(--dex-deep), 0 20px 60px rgba(0,0,0,.5);
+}
+dialog.player[open] { display: grid; gap: 14px; padding: 16px 18px 18px; }
+dialog.player::backdrop { background: rgba(4, 6, 14, .82); }
+.pl-top { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; }
+.pl-top .lens { width: 44px; height: 44px; }
+.pl-text { display: grid; gap: 2px; min-width: 0; }
+.pl-text .eyebrow { color: rgba(255,255,255,.85); }
+.pl-text h2 { font-size: clamp(20px, 3vw, 28px); line-height: 1.1; }
+dialog.player .close { position: static; }
+.pl-screen {
+  background: #e9ecef; padding: 12px 12px 22px; border-radius: 12px 12px 12px 40px;
+  box-shadow: 0 0 0 2px rgba(0,0,0,.25), inset 0 -5px 0 rgba(0,0,0,.08);
+}
+.pl-frame { position: relative; aspect-ratio: 16 / 9; max-width: 100%; background: #05070d; border-radius: 6px; overflow: hidden; box-shadow: inset 0 0 0 2px #2a2f3a; }
+.pl-frame iframe, .pl-frame > div { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.pl-msg, .pl-next {
+  display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center;
+  background: rgba(0,0,0,.28); border-radius: 12px; padding: 10px 14px; font-weight: 600;
+}
+.pl-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.pl-bar #plNext { margin-left: auto; }
+dialog.player .btn.ghost { color: #fff; border-color: rgba(255,255,255,.55); }
+dialog.player .btn.ghost:hover { background: rgba(255,255,255,.12); }
+dialog.player .btn.ghost[aria-pressed="true"] { background: #fff; color: var(--dex-deep); border-color: #fff; }
+dialog.player .icon-btn { width: 40px; height: 40px; color: #fff; border-color: rgba(255,255,255,.55); }
+dialog.player .icon-btn svg { width: 18px; height: 18px; }
+dialog.player .btn svg { width: 18px; height: 18px; }
+.pl-tip { margin: 0; font-size: 12.5px; color: rgba(255,255,255,.82); max-width: 80ch; }
+
+/* Progress transfer */
+.transfer { margin-top: 36px; padding: 18px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line); display: grid; gap: 10px; }
+.transfer h2 { font-size: 20px; }
+.transfer p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 70ch; }
+.tr-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.tr-row input {
+  flex: 1 1 240px; min-width: 0; font: inherit; font-family: var(--font-mono); font-size: 13px; color: var(--fg);
+  background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px;
+}
+.transfer .tr-msg { color: var(--fg); font-weight: 600; min-height: 1.2em; }
+
+@media (max-width: 600px) {
+  dialog.player {
+    width: 100vw; height: 100dvh; max-height: 100dvh; margin: 0; border-radius: 0; box-shadow: none;
+  }
+  dialog.player[open] {
+    align-content: start;
+    padding: calc(12px + env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px));
+  }
+  .pl-top .lens { width: 34px; height: 34px; }
+  .pl-screen { padding: 8px 8px 16px; border-radius: 10px 10px 10px 26px; }
+  .pl-bar .btn { padding: 8px 14px; }
+}
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="wrap bar-inner">
+    <div class="brand">
+      <span class="lens" aria-hidden="true"></span><span class="leds" aria-hidden="true"><i></i><i></i><i></i></span>
+      Maratón de Ash
+    </div>
+    <form class="search" id="searchForm" role="search">
+      <input id="q" type="search" autocomplete="off" placeholder="Busca un capítulo, un Pokémon, un personaje o un lugar" aria-label="Buscar capítulo, Pokémon, personaje, lugar o código">
+    </form>
+    <div class="sync" id="sync" data-mode="local"><span class="sync-dot"></span><span id="syncText">Progreso guardado en este navegador</span></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <div>
+      <div class="eyebrow">De Pueblo Paleta a Maestro Pokémon</div>
+      <h1 id="heroTitle">¡Hazte con todos los capítulos!</h1>
+      <p id="heroText"></p>
+    </div>
+    <article class="next" id="next" aria-live="polite"></article>
+  </section>
+
+  <section class="journey" aria-label="Tu progreso por regiones">
+    <div class="journey-head">
+      <span>Tu Pokédex: <b id="watchedCount">0</b> de <b id="totalCount">0</b> capítulos vistos</span>
+      <span id="journeyPct">0 %</span>
+    </div>
+    <div class="strip" id="strip"></div>
+    <div class="regions" id="regions"></div>
+    <div class="medals-wrap">
+      <div class="medals-head"><b>Medallas</b><span id="medalCount"></span><span>Termina una temporada para ganar su medalla.</span></div>
+      <div class="medals" id="medals"></div>
+    </div>
+  </section>
+
+  <aside class="tip">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+    <div>
+      <p><b>Los vídeos pueden empezar en inglés.</b> Para ponerlos en castellano, toca la rueda de Ajustes del reproductor, luego Pista de audio y elige Español (España).</p>
+      <p id="tipStatus"></p>
+    </div>
+  </aside>
+
+  <div class="filters" role="group" aria-label="Filtrar temporadas">
+    <button class="chip" type="button" data-filter="all" aria-pressed="true">Todas</button>
+    <button class="chip" type="button" data-filter="free" aria-pressed="false">Gratis ahora</button>
+    <button class="chip" type="button" data-filter="progress" aria-pressed="false">Empezadas</button>
+    <button class="chip" type="button" data-filter="todo" aria-pressed="false">Sin empezar</button>
+  </div>
+
+  <div id="rows"></div>
+
+  <section class="transfer" aria-labelledby="trTitle">
+    <h2 id="trTitle">Lleva tu progreso a otro dispositivo</h2>
+    <p>Tu progreso se guarda en este navegador. Para tenerlo también en el móvil o en otro ordenador, copia tu código aquí y pégalo allí.</p>
+    <div class="tr-row">
+      <button class="btn small" type="button" id="trCopy">Copiar mi código</button>
+      <input id="trCode" type="text" readonly aria-label="Tu código de progreso">
+    </div>
+    <form class="tr-row" id="trForm">
+      <input id="trIn" type="text" autocomplete="off" placeholder="Pega aquí un código de otro dispositivo" aria-label="Código de progreso de otro dispositivo">
+      <button class="btn small ghost" type="submit">Añadir ese progreso</button>
+    </form>
+    <p class="tr-msg" id="trMsg" role="status"></p>
+  </section>
+
+  <footer>
+    <p>Página hecha por fans, sin relación con The Pokémon Company ni con Nintendo. Los vídeos se reproducen desde el canal oficial y gratuito TV Pokémon en YouTube y, para las temporadas que aún no están ahí, a JustWatch para ver dónde se emiten legalmente.</p>
+    <p>Títulos, argumentos, curiosidades y etiquetas de cada capítulo: <a href="https://www.wikidex.net/" target="_blank" rel="noopener">WikiDex</a>, con licencia <a href="https://creativecommons.org/licenses/by-sa/3.0/deed.es" target="_blank" rel="noopener">CC BY-SA 3.0</a>. No aparecen los capítulos censurados ni los que nunca se emitieron en España. Miniaturas: canal oficial TV Pokémon en YouTube.</p>
+  </footer>
+</main>
+
+<dialog class="sheet" id="sheet" aria-labelledby="sheetTitle"></dialog>
+<dialog class="sheet epd" id="epd" aria-labelledby="epdTitle"></dialog>
+<dialog class="player" id="player" aria-labelledby="plTitle">
+  <div class="pl-top">
+    <span class="lens" aria-hidden="true"></span>
+    <div class="pl-text"><div class="eyebrow" id="plSub"></div><h2 id="plTitle"></h2></div>
+    <button class="close" type="button" id="plClose" aria-label="Cerrar el reproductor"></button>
+  </div>
+  <div class="pl-screen"><div class="pl-frame"><div id="plFrame"></div></div></div>
+  <div class="pl-msg" id="plMsg" hidden></div>
+  <div class="pl-next" id="plNextBox" hidden>
+    <span id="plNextTxt"></span>
+    <button class="btn small" type="button" id="plNextGo">Ver ahora</button>
+    <button class="btn small ghost" type="button" id="plNextCancel">Cancelar</button>
+  </div>
+  <div class="pl-bar">
+    <button class="icon-btn" type="button" id="plPrev" aria-label="Capítulo anterior"></button>
+    <button class="btn ghost" type="button" id="plSeen" aria-pressed="false"><span>Marcar como visto</span></button>
+    <button class="btn ghost" type="button" id="plInfo">Ficha</button>
+    <a class="btn ghost" id="plYT" href="https://www.youtube.com/" target="_blank" rel="noopener">YouTube</a>
+    <button class="icon-btn" type="button" id="plNext" aria-label="Capítulo siguiente"></button>
+  </div>
+  <p class="pl-tip">¿Sale en inglés? Toca la rueda del reproductor, luego Pista de audio, y elige Español (España). Si no aparece esa opción, pulsa YouTube para verlo allí.</p>
+</dialog>
+<div class="toast" id="toast" role="status" aria-live="polite" popover="manual" hidden></div>
+
+<script>
+(() => {
+  const CHANNEL = "https://www.youtube.com/@OfficialPok%C3%A9monTV";
+  const JUSTWATCH = "https://www.justwatch.com/es/serie/pokemon";
+  const CHECKED_ON = "19 de octubre de 2026";
+  const LS_KEY = "maraton-ash-v1";
+  // Per season: [title, code, YouTube video id or ""], in episode order. Titles from WikiDex; ids from the official channel's playlists.
+  const DATA = {"1":[["¡Pokémon, te elijo a ti!","EP001","z3hMX65Khtg"],["Emergencia Pokémon","EP002","h6LFdBPjbf4"],["Ash atrapa un Pokémon","EP003","ObtS79k2NM4"],["El reto del samurái","EP004","PEUL-1_zGWI"],["Combate en la Ciudad Plateada","EP005","COr4zRFX0Gw"],["Clefairy y la piedra lunar","EP006","iaxkOJZxzQM"],["Las flores acuáticas de Ciudad Celeste","EP007","RcBw50wD9_o"],["El camino hacia la Liga Pokémon","EP008","rcA8dMGOMCw"],["La escuela de los golpes duros","EP009","dJgDmrra3kM"],["Bulbasaur y la aldea oculta","EP010","nfpsYGAGzF0"],["Charmander, el Pokémon perdido","EP011","JhhupHQlal8"],["Aquí llega el escuadrón Squirtle","EP012","1TlOcjJodHw"],["Misterio en el faro","EP013","3l1lSNQxJA0"],["Competición de descarga eléctrica","EP014","Cd-3_QOIjgU"],["Combate a bordo del St. Anne","EP015","9wAKxOavTnw"],["El naufragio Pokémon","EP016","326R_Lhua5w"],["La isla de los Pokémon gigantes","EP017","R-GNznqs7cI"],["Tentacool y Tentacruel","EP019","6uNYmqvF24k"],["El fantasma de Mayden's Peak","EP020","boY4QaYhBeM"],["Adiós Butterfree","EP021","T23nJU-KwZo"],["Abra y el enfrentamiento psíquico","EP022","TYhdezzyqPo"],["La torre del terror","EP023","hrANeOomxRw"],["Haunter versus Kadabra","EP024","9IymXcXl4fk"],["Primeape se vuelve loco","EP025","9aLD8SGoPIc"],["Perfume Pokémon","EP026","rrQmjrZedac"],["Siesta hipnótica","EP027","XwpbJK-WE8Q"],["La última moda Pokémon","EP028","lKggkmrv7q4"],["El Pokémon boxeador","EP029","_LhB0LIQlQ0"],["Saltan chispas por Magnemite","EP030","f8mWMqLO88A"],["Aplasta a esos Diglett","EP031","mRR7mbV0u4U"],["El Poké-enfrentamiento ninja","EP032","XpwNBGB6Fuo"],["La llama Pokémon-Athon","EP033","RYdXQlBjjPI"],["El niño Kangaskhan","EP034","1PfJMmwI6b4"],["La banda de la bici del puente","EP036","DhRYzCfjysY"],["La misteriosa mansión de Ditto","EP037","dHuwaW3Vlh4"],["El adiós de Pikachu","EP039","lSZ172BJoaE"],["Los combatientes hermanos Eevee","EP040","xTmgJ8-HCtI"],["Despierta, Snorlax","EP041","tuTr_cRGKds"],["Enfrentamiento en Ciudad Tenebrosa","EP042","XXuhIoEBB_M"],["La marcha del escuadrón Exeggutor","EP043","pBXQbh0mtCE"],["El problema con Paras","EP044","J2MF6t_N8vo"],["La canción de Jigglypuff","EP045","Ss13Pnq6XII"],["El ataque de los Pokémon prehistóricos","EP046","pCCsYuiAIQ8"],["Operación Chansey","EP047","XTaSlC_OmV4"],["Sagrado matrimonio","EP048","LzSRkzuKJM8"],["Tan cerca y aun así tan Farfetch'd","EP049","wKU_vLdoSwQ"],["¿Quién conseguirá quedarse con Togepi?","EP050","okJhrQSg7uU"],["El jardín misterioso de Bulbasaur","EP051","SpYyPHhvCFQ"],["El caso de la travesura K-9","EP052","Fv3cmSw9-L4"],["Paparazzi de Pokémon","EP053","6ipxURw5U9w"],["El examen final","EP054","00oVhyityGY"],["El secreto del centro de crianza","EP055","uLJCo0ly_Rc"]],"2":[["Princesa contra princesa","EP056","yGvr0TXXPVU"],["El perrrfecto héroe","EP057","WmhHwNb2wio"],["A ver si aciertas éste","EP058","p2sUUsylt3M"],["Pánico volcánico","EP059","fokk0u5Yr5Y"],["Durmiendo con Blastoise en la playa","EP060","mDGVc3Sc_H4"],["Misty la sirena","EP061","G7EBiaDe_K0"],["Cuentos de Clefairy","EP062","5jtFBj6nLw4"],["El combate de la medalla","EP063","VQFtkKgOVGk"],["Es la hora de Mr. Mime","EP064","KH92hzvhv2g"],["Salida de la nieve","EP066","8Gr8rpuXE0Y"],["Espectáculo en el Poké-corral","EP067","SaMuL0NZhCU"],["La solución de la evolución","EP068","d7Cg2uxArRk"],["La Pi-Kahuna","EP069","be4-hKKU9gQ"],["Haced sitio a Gloom","EP070","PsrT-DG4M4w"],["Luces, Cámara y Cuack-ción","EP071","5aM-1cKb6ek"],["Ve al oeste, joven Meowth","EP072","IcbL2_S2I1w"],["El Maestro de lo Onixeperado","EP073","zJIPee30NE4"],["El antiguo rompecabezas de Pokémopolis","EP074","L7jmc-Nlf_g"],["Malo hasta la médula","EP075","WorXd6hl-Tk"],["¡A todo gas!","EP076","r457Fc-bnAc"],["Comienza la primera ronda","EP077","ROUh6KKz9XA"],["Fuego y hielo","EP078","mFp1nN5RSPE"],["La sonada cuarta ronda","EP079","To4-wg_FIWE"],["Un amigo de verdad","EP080","x3Lo2lSdfq8"],["Igual amigos que enemigos","EP081","aW85odlbP8w"],["Amigos hasta el final","EP082","XwqbK7rylF8"],["Pánico en la fiesta de Paleta","EP083","cMP8xw5nNFQ"],["Susto en el aire","EP084","XgqTy11IcGY"],["Peligro: Poké Ball","EP085","t4kyX_eaZt8"],["El Lapras perdido","EP086","_cy6tWoHHVA"],["Nacido para navegar","EP087","jYwfTAljvis"],["Pikachu se rebela","EP088","ZxrAqlIq0Lk"],["El Onix de cristal","EP089","qdju1COuRvQ"],["De color rosa","EP090","uKo5RXqOQwI"],["Impacto caparazón","EP091","30ZUfh6DRG0"],["Adiós, Psyduck","EP093","gzQ9-U8C-5U"],["La Joy de los Pokémon","EP094","LP_9xMRbmMA"],["Maniobras en Navel","EP095","9RSOiS0QrS8"],["Ataque de hambre","EP096","A4pBehExNAM"],["Un barco de escalofrío","EP097","Lr5Y5LSedaQ"],["¡Meowth al poder!","EP098","AvpI0ejkCnk"],["Tracey captura un insecto","EP099","2SpWAF-XB6U"],["Menudo día libre","EP100","9YXTu-Q8J2M"],["¿Por qué existís, Pokémon?","EP102","KwdPZRgBU_o"],["Sigue, pequeño Pokémon","EP103","Z099GMkbxu0"],["La amenaza misteriosa","EP104","Th59tGIEcUE"],["Misty conoce a su media naranja","EP105","WruRr90OymY"],["Destinados a tener problemas","EP106","htiy8sDnpZQ"],["Charizard congelado","EP107","R9SQMo70NY8"],["La guerra de los Pokémon de agua","EP108","RY0bYz4F9s8"],["Combate por comida Pokémon","EP109","WuCYn3BxXGE"],["Doble problema Pokémon","EP110","sTj8xUZfceg"],["El observador chiflado","EP111","PIpCyfGOpik"],["La espora paralizadora","EP112","0aNa_xESK1A"],["Hola, Pomelo","EP113","R19Puxh7vWc"],["Adelante, Dragonite","EP114","bAE1pgjx8Hk"],["Viva los Lapras","EP115","GLyzKxfN1B4"],["El rodeo subterráneo","EP116","c0S1h3q3Dhw"],["Metidos en una carpa","EP117","xPvH47c09g4"],["El resurgir de una rivalidad","EP118","8hVRAoARero"]],"3":[["No toquéis a ese \"Dile\"","EP119","EaOMsueW9v0"],["Dos encuentros problemáticos","EP120","PoZbww_nhBc"],["Un jugoso final","EP121","cgMRq5mvU9Q"],["Pokémon rodante","EP122","qFvyGGpNFrE"],["Ilusión confusión","EP123","qTWvuFHjCNg"],["El poder floral","EP124","0kbWKYSvsG4"],["Spinarak ataca","EP125","l7KEGwAJRZQ"],["Snubbull, la snob","EP126","wSAa8vQNdhc"],["El pequeño gran cuerno","EP127","enDB30PCPlw"],["El rescate de Chikorita","EP128","4GHQtiQQFYo"],["Una vez en luna llena","EP129","fmF-8w8yi78"],["Fuera el silbato","EP130","HIEurBH27wE"],["La ignorancia de Blissey","EP131","SJEy7hIBZU8"],["Un combate con Bellsprout","EP132","aLPLcXM9iHQ"],["Combatiendo al volador con fuego","EP133","0tmtigRXrdM"],["Para llorar a gritos","EP134","u7dAwkjor0Q"],["Tanque para aburrir","EP135","Z2RJwAuj6a8"],["La ambición ardiente de Charizard","EP136","hOSXkiZ_8zY"],["Sonreíd para ganar","EP137","d-uK1M7ElDo"],["Chikorita está que muerde","EP138","eikfhPHmLLc"],["Amigos del mal tiempo","EP139","GIzkLBRiTsg"],["El secreto del superhéroe","EP140","4eWpFFtauZ0"],["Manso y lanudo","EP141","7LPhys-yBsg"],["Conectado para el combate","EP142","vD9FvySkvLc"],["Buena caza de Quil","EP143","RWYt9Iaa3No"],["Amenaza de sequía","EP144","OIetH55YkDs"],["Cultivando bonguri","EP145","5bNbPfdSHq4"],["Ahuyentando a los bichos","EP146","HQSuocuOyHI"],["Una historia de Farfetch'd","EP147","zTZqyNGW5w8"],["Engaños en el intercambio","EP148","4AFWqXNEE30"],["La brigada de incendios","EP149","6XmwBX-N-FA"],["No, gran Woop","EP150","Lmw73Q2v38c"],["Túnel a la vista","EP151","EdtmDpTUoH4"],["Salvad al Houndour","EP152","RWXpLXtMmio"],["Totodile, el bailón","EP153","s6rIaDkiV7I"],["Combates ardientes","EP154","ds6hRl7XsfU"],["Totodile, el amoroso","EP155","_1n_mGRca7s"],["Juego sucio","EP156","IsM0lw95Kdc"],["Sorpresa en el bosque","EP157","Z2wJCfy211c"],["Los amigos psíquicos","EP158","xbj_guUc4B4"],["Cazadores de fortuna","EP159","r02yuCzYiA8"]],"4":[["Una oportunidad en Ciudad Trigal","EP160","3Zutr6Yhzk0"],["El final del cuento de la lechera","EP161","cM4XO3WBExc"],["¡Hora de emisión!","EP162","qn1G5SZK6rM"],["Concurso de Pokémon bicho","EP163","Wcm8GAnr_48"],["Selección de tipos","EP164","jIe99CLgH6I"],["Locos por los fósiles","EP165","mJgxn8OUddk"],["¡Mensajeros!","EP166","_4706FpqFOs"],["Lío en el castillo","EP167","8j1okJVoO2g"],["Dos Pokémon hits y una dama","EP168","fkzVjDF1woU"],["Un combate en agua caliente","EP169","uj_0liP4KEE"],["Anzuelo, sedal y chulito","EP170","7yLIggbC4J4"],["La bella y el criador","EP171","BTMZ1I1zGGI"],["Una píldora más fácil de tragar","EP172","IHksXbhJNgA"],["Energía a tope","EP173","Aa8VhPDbxbI"],["La patrulla de la montaña","EP174","fIys567mMso"],["Festival de Wobbuffet","EP175","i4nFCcn4U-g"],["Combate de imitaciones","EP176","2B8Ytj4fNIY"],["El problema con Snubbull","EP177","2_qGrYE9TDw"],["Amigos de Ariados","EP178","SXrXSW1jS4o"],["Alas cosa mala","EP179","VAhFssTid80"],["Campeonato de Pokémon planta","EP180","dKzblHJ0cDM"],["Sociedad manzanil","EP181","8ameAiAAmJs"],["La entrega especial de Houndoom","EP182","P0Jj_IABtSo"],["Una oportunidad fantasmil","EP183","Dba8YZFbHYo"],["De fantasma en fantasma","EP184","EWW0L_R3OCg"],["La ceremonia del té","EP185","rCEXFhhHLm0"],["Robos brillantes","EP186","WqEes5ERsVM"],["La luz mágica","EP187","xv65Pd6vk-U"],["InOSOportable","EP188","-08cJlAxKpU"],["Fotos de amor","EP189","F-e8KGGhgmA"],["Aguas termales","EP190","reQTs8lXBXs"],["Hielo congelador","EP191","td9L5F0DLmI"],["Las piedras robadas","EP192","tazDQefjoRw"],["Los huidizos Dunsparce","EP193","SBF9gHDWHGs"],["Wobbuffet y la llave secreta","EP194","Td-URqrnuSg"],["Los delirios de Brock","EP195","rzvRl1qkpB4"],["Maestros de sumo Pokémon","EP196","olOVsmvcliE"],["El Poké-parlante","EP197","WFukh52bHNk"],["La reina de los Pokémon","EP198","xEk1UOulEOY"],["Arte Pokémon","EP199","bD_nj1nGFGg"],["Brock el rompecorazones","EP198","ybYJh-hyW8I"],["Seguridad eléctrica","EP201","fSOp5jKyL2M"],["Los progresos de Bayleef","EP202","vBwRWQPRRcE"],["Actuando con Natu-ralidad","EP203","dIkww0nNus4"],["Competición de globos aeroestáticos","EP204","1hLR6wk0kfo"],["El superhéroe del cine","EP205","UKKDa1VBTKc"],["El Rhydon nadador","EP206","FnyT8KCI1ZI"],["Buscando a los Kecleon","EP207","emQiPPvSzeg"],["La Joy de los Pokémon de agua","EP208","tZqECNiaYvI"],["El Miltank sanador","EP209","0LsqgApXv_Y"],["En busca de la luz","EP210","Z6JFs6Cwmpw"],["Machoke, Machoke machote","EP211","OJDH50m-hUc"]],"5":[["Alrededor del remolino","EP212","-BquBETPD5k"],["Llévame volando hasta la luna","EP213","59zUkOZEL70"],["Acompañando a los Chinchou","EP214","-QUNVe1CXCE"],["¡El Corsola travieso!","EP215","ypigQ0Mozm4"],["¡Mantine al agua!","EP216","fBiAMT8nsdU"],["¡Octillery el marginado!","EP217","6317AwufEp8"],["Héroes del duelo","EP218","hQYRvL0Tzvo"],["¡El combate perfecto!","EP219","uiglJ_0aMg4"],["Los Diglett cultivadores","EP220","HNe9cNE-eog"],["¡Hi ho plata a gogó!","EP221","WgvFEV3XV5o"],["El misterio es historia","EP222","vbSH86rCW0w"],["¡Un padre atrapado!","EP223","nESCOwke9s4"],["Una promesa es una promesa","EP224","GNf4Tww3Bms"],["El Noctowl salvador","EP225","x_xZ2BkXAiI"],["Nervios de Steelix","EP226","Hl62sZIj1RA"],["¡Bulbasaur... el embajador!","EP227","B2qGTYOvdtM"],["Falta el Espeon","EP228","IWiRM_Pzfks"],["Por Ho-Oh suenan los cascabeles","EP229","dqIOG-PtYbk"],["¡Pokémon extremo!","EP230","xl0zw6TyvYI"],["Una aventura con vistas al huevo","EP231","uTI669tuftY"],["Maquinando un plan","EP232","Hy1jsD5WTn4"],["¡Deudas y prohibiciones!","EP233","vr0-v-JBXHg"],["Esperando a un amigo","EP234","OO4w8CfspEc"],["Un Tyrogue con muchos problemas","EP235","cy1_dI0i-HE"],["Xatu, el futuro","EP236","FLJEHxnoB9E"],["Experimentando la evolución","EP237","r4fT1BeZDEM"],["Furia inocente","EP238","C0-E_0JL2B0"],["Tan frío como Fredo","EP239","vBqNEbNcPDo"],["¡Helados para el nene y la nena!","EP240","78A6L2IC35Q"],["Sople como sople el viento","EP241","bL47sJxDRk8"],["A algunos les va el calor","EP242","8-uyFJxx62s"],["La maga Pokémon","EP243","Gm4atqEgVMk"],["El cristal poderoso","EP244","xjPh2QajwXs"],["La canción y el baile de siempre","EP245","2uJ4Qr9v4oQ"],["¡Iluminados!","EP246","69KmNTqhvZ8"],["¡Buscando al auténtico profesor Oak!","EP247","dx8-ZccTHOY"],["Pide un deseo a un estrellado","EP248","xMrBWjCGkCc"],["Adivinos extravagantes","EP249","_2FQu-gL0Ls"],["¡Pilla un Pokémon sorpresa!","EP250","GtpXTXahM9U"],["¡Politoed el animador!","EP251","gbMOZXS_gBk"],["La belleza está en el interior","EP253","eD3CNYkogPU"],["El robo del colmillo","EP254","at9uYV_B0S8"],["¡Grandes bolas de fuego!","EP255","JS3g6yT9ihE"],["¡Más vale ocho que nunca!","EP256","u2TkmvL2tVI"],["¿Why? ¡Wynaut!","EP257","Jwh9g1dapZM"],["Combates bajo el agua","EP258","IVtUczqbOqo"],["Lapras de lujo","EP259","lAtIfHIaKdk"],["Sal del cascarón si puedes","EP260","Vmo_dagskV4"],["A Entei no hay quien le venza","EP261","WBumqF5gwLE"],["Una hazaña digna de un rey","EP262","RjIIIbsePMY"],["Mi objetivo es Elekid","EP263","xyRPYlKoV6Q"],["¡Eres una estrella, Larvitar!","EP264","G6gKw8q0eCY"],["¡El mundo de Unown!","EP265","G9z-WqIB4v4"],["La madre de todas las batallas","EP266","w7ALiyRU7cU"],["Sneasel el centinela","EP267","VrhSlmoR03Y"],["¡Esperando la antorcha!","EP268","Dw9S9Et4gzU"],["Amor al estilo Pokémon","EP269","XVO0LOFk1Xc"],["¡Atados uno a otro!","EP270","_1tM6tV9qN4"],["Lazos que unen","EP271","mH5NvbVUdrc"],["¡Calor invencible!","EP272","dHPTV4AHUyc"],["¡Jugando con fuego!","EP273","inxZmZi0pEk"],["El reñido final de Johto","EP274","7nbLB_KaSzE"],["¡Ya te cogeré más tarde!","EP275","JoRU_94DxjE"],["¡Solo en Hoenn!","EP276","X2nCbKQodPs"]],"6":[["Todos en camino","AG001","zwDm6zeCw9w"],["Ruinas legendarias","AG002","zdO7loiXnJc"],["No hay otro lugar como Hoenn","AG003","HM7s74ncvwA"],["No hay quien venza a Taillow","AG004","vr9r0_a_yFw"],["¡Entrenadores panticortos!","AG005","YoEv8luV1JI"],["¡El cazador furtivo!","AG006","to3DRMm5L8g"],["Amigos de los árboles","AG007","28KtMUVkJuw"],["Una cola muy enrollada","AG008","XaWreTXENiY"],["La mansión de los Shroomish","AG009","f4TkRdaTx2o"],["Con la boca bien llena","AG010","Ryi-5f9-rhU"],["Un mordisco para recordar","AG011","1vrKNEw_fKU"],["Lotad acuáticos","AG012","A11zz84OqWs"],["¡El alucinante brillo de Beautifly!","AG013","lSXSbLi8KaI"],["A la captura del Wurmple","AG014","ssd64BQ-e4U"],["Todos a la escuela Pokémon","AG015","Xn9pREeOh0M"],["Ganando a Nosepass","AG016","8OBNLAanSkg"],["Persecución en Devon","AG017","ayOIJeIZdJk"],["El capitán Arenque y su Wingull","AG018","OOY2IEvrpQo"],["¡Sharpedo al ataque!","AG019","d3NZjHQuYvQ"],["¡Qué gozada de ola!","AG020","3hAsy3SAlAo"],["¿Cuál Wurmple es el mío?","AG021","h2G0CpyHfRg"],["Un problema con muchos agujeros","AG022","ULunh5gdl-8"],["A la captura del Corphish","AG023","01Lbn9-oqwY"],["Hay que salvar a Corphish","AG024","v-ObYUGRBUM"],["Una misión Mudkip","AG025","3rE7ysKOpNs"],["Haciendo amigos con los Nuzleaf","AG026","9eeygPE68O4"],["Un plan de tres equipos","AG027","CISHbGt3Yw4"],["Ver para creer","AG028","xe_WC0qAst4"],["¡Preparados para los sustos de Sableye!","AG029","RhzUxT2QpFM"],["¡Un combate meditado!","AG030","3ck-vtkfMU8"],["Cuidado con los geysers","AG031","0j3un0h-dCc"],["¡Barco abandonado!","AG032","oHMGqu3WTGM"],["¡Eso sí es flower power!","AG033","6-_ntzoR_Kk"],["Salvar a Wailord","AG034","bPwMOzTYaMM"],["¡Ganar, perder o Drew!","AG035","cwYWR5bzmlg"],["La palmada de Spheal","AG036","WSqWvo3eiWo"],["¡El secuestro de Joy!","AG037","3LSWaU0Dzzg"],["Una niebla muy diferente","AG038","zggdwm9Vaqc"],["Fiesta en Casa Treta","AG039","zNbfIedhwbs"],["Watt y Wattson","AG040","aLH0dIJeR5U"]],"7":[["Lo que siembras es lo que recoges","AG041","2pfoBYZuqNQ"],["¡Dejad que los Bagon sean Bagon!","AG043","T49sUrSphFo"],["La princesa y el Togepi","AG044","Jnt-KrwZrtM"],["Un espejismo Togepi","AG045","2rI8VcLwNJs"],["Un cándido Camerupt","AG046","L5M-k7uY0Sc"],["Amor al primer vuelo","AG042","MTUuko7U8v4"],["El dulce Skitty","AG047","v5HDHEgg4LE"],["El zizagueante Zangoose","AG048","zzdv8i-C7hE"],["¡Demasiados Max!","AG049","7mYYv3gWl30"],["Artistas y estafadores","AG050","2VWgxqYZBsQ"],["Pase lo que pase","AG051","l8-iTLbvdPw"],["¡El poder de la animación!","AG052","HniTh55mcaw"],["¡Con ayuda se puede ganar!","AG053","76uXWax_zXI"],["Lucha por el meteorito","AG054","BV7HiQ-gM2Y"],["¡Conmoción poética!","AG055","9ZukR69jSPc"],["¡Marchando un bostezo!","AG056","IkVgfHVd6Lw"],["¡Buscando a un Spinda!","AG057","ITAhonrAqUs"],["¡Con Torkoal no se juega!","AG058","shvDwmo3BGc"],["¡Carga Manectric!","AG059","O10lC-EZ7RM"],["¿Se te ha comido la lengua el Delcatty?","AG060","9FYI6EMfc6w"],["El disfraz del desastre","AG061","NA-E-IvIvdY"],["¡Combate al límite!","AG062","77dcb5ff26A"],["Pon un Lombre en tu casa","AG063","9UycZ16xXq4"],["Un Swablu tristón","AG064","oETNQyNUjVo"],["¡Gulpin el tragón!","AG065","0UojMWLR7Os"],["¡Exploud el gritón!","AG066","2VfUg5sGuzE"],["¡Baila, baila Ludicolo!","AG067","rQFcpOZtK44"],["Un problema de dobles","AG068","eiqtx8BwxzI"],["¡Amor al estilo Petalia!","AG069","gTUZBqxN5dI"],["El poder del equilibrio","AG070","HpazzjHzrXE"],["Seis ataques en un sólo paquete","AG071","Yi2UVijDkOY"],["Discutir es lo mejor","AG072","Xe3DbAhmqPg"],["¡La furia de los Pokémon planta!","AG073","JmY_Gvak87s"],["¡Falsas Pokéball!","AG074","VoioM-Cg7Mc"],["Whiscash y Ash","AG075","Ml6QKFp0DvA"],["Yo, mi futuro y el tiempo","AG076","B8w-dsbLmnY"],["Una fan con un plan","AG077","M5yu0OqOKMM"],["Experimentando la derrota","AG078","ILcequdWXfA"],["Las perlas son las mejores amigas de Spoink","AG079","pLbLdJHpCTY"],["Eso sí que es un Swellow","AG080","sSRlIJVO5Cw"],["¡Reforma esta casa con Shuppet!","AG081","UncvvO7nkFs"],["La manzana de Shroomish","AG082","Y9kyY56aqUA"],["Amigos del mal tiempo","AG083","y373XlWpKfo"],["¿Quién viene volando?","AG084","1QwrRdxo2xQ"],["¡Un combate de gimnasio por todo lo alto!","AG085","smKMys6Kmjg"],["Luces, Camerupt, ¡Acción!","AG086","WmGKZSkQ1HU"],["¡Lunático como un Lunatone!","AG087","JNj9cR_h_f8"],["El jardín del comer","AG088","DMcsIpB14P4"],["¡Un susto para recordar!","AG089","e___K3UvMF4"],["¡Pokécubos, recetas y bayas!","AG090","TtK4iJDnPeg"],["Lecciones en Calagua","AG091","B74zCwAIKeI"],["Haciendo de juez","AG092","99HJRv6TDvE"]],"8":[["¡Clamperl de sabiduría!","AG093","gP1uHA39ksc"],["¡El Relicanth todo lo puede!","AG094","T2_caCZ99q0"],["La guerra evolutiva","AG095","5bpEtQgYO-g"],["¡Entrenamiento desastroso!","AG096","3VLIapc3EHY"],["Liberad a Groudon","AG097","D-Yw-SZ3wNU"],["¡La lucha de las leyendas!","AG098","huscOMa-6vY"],["Sigue siendo Rocket Roll para mí","AG099","2O1nhl_klDI"],["¡Sólido como un Solrock!","AG100","oc7Y2cZrcOY"],["Cuestión de vanidad","AG101","v7lnr9dKrhA"],["¿Dónde está Armaldo?","AG102","g3Ntlgmg_lw"],["Un Cacturne es lo peor","AG103","Z4HnESWD8lk"],["El Claydol gigante","AG104","jmc_ECxRw0g"],["Mawile se enamora","AG105","WDXyUZwoNf0"],["Suplicad, socavad y robad","AG106","bjVqovCvUW0"],["¡Catastrofe Absol-uta!","AG107","CeOOVTvj5QE"],["¡Que nieve, que nieve, que te hiele Snorunt!","AG108","x8ZxeIv84rU"],["¿Me ha hablado un Ralts?","AG109","dvqprWyLQOU"],["¡La octava y el gran destino!","AG110","yaH8cvHueH8"],["Con ocho no basta","AG111","rNm1Hx8aL9k"],["Enfrentamiento con Linoone","AG112","3euRZiq7iPw"],["¿Quién, qué, cuándo, dónde, Wynaut?","AG113","DZ9B04aWBsw"],["Época de emparejamiento","AG114","rK0dGpYj-38"],["¡Celos y envidia!","AG115","BUigSKj7acM"],["¡Apuros en Oromar!","AG116","33nUBmAPJrU"],["Baya, baya, bocadillo de baya","AG117","Evffx_CQ13g"],["¡Morrison es el que más!","AG118","YupMZYgEUMA"],["El robo de la copa cinta","AG119","IErQ8ke8J0M"],["¡Adelante viento plata!","AG120","c7gKmm277pk"],["¡Engaño y ayuda!","AG121","aCVJPxVJmIo"],["¡Fascinación por Drew!","AG122","DH65pqFGICQ"],["¡Tiempo de islas!","AG123","kH2dAtXuUlE"],["Un Meowth salva la antorcha","AG124","zA4N2y8-UBQ"],["¡Salvado por el Beldum!","AG125","RLWhw6-CC6c"],["Presumiendo y ganando","AG126","Uoy7eA9HYL4"],["¡Choques y vínculos!","AG127","whZ3siIUPxo"],["Una difícil decisión","AG128","9zH0hV_eSmk"],["Elígelo o piérdelo","AG129","rJ-08x9gpIc"],["El final del campeonato","AG130","cJjHFetMqn8"],["¡El team intrigante!","AG131","PXnxmYXMUG0"],["El lugar adecuado con el Mr. Mime adecuado","AG132","6kZ6MqbfAP4"],["Un auténtico Cleffa de montaña","AG133","TNqGc-KpmMs"],["Número uno Articuno","AG134","ScoDg1dSHDg"],["El símbolo vida","AG135","RR0v4WO0ZGg"],["Leales a Onix","AG136","xbxQJEjhVew"],["Pesado, duro, Jigglypuff","AG137","F4GsWlJrHrQ"],["Un Arcanine en las alturas","AG138","41ByisvmsNc"],["Un Psyduck de lujo","AG139","zhDxsV3xEnc"],["Felicitaciones al chef","AG140","AnKuxbFS6Vk"],["El dilema de Caterpie","AG141","FqCAaC_wUWA"],["El engaño en Azafrán","AG142","wsI4JwjErmA"],["Un obstáculo para Squirtle","AG143","qQDWePTWo58"],["Pasta a la vista","AG144","6TilMinUomI"]],"9":[["El falso fantasma","AG145","qXWhloLj2bM"],["Dulce Jaimito","AG146","l2iEnl5ZH8A"],["Un palo para el pobre Brock","AG147","GRmXUbgrgP0"],["La rueda de la fortuna","AG148","i8C4mCzCtlM"],["La huevo-aventura de Aura","AG149","hcqN6JfScmA"],["Fin de semana marchoso","AG150","BggoX5fiUyk"],["El viejo lago","AG151","6mnFIdUFW8s"],["¡Tácticas teatrales!","AG152","CaHtCAVJCIc"],["Descargando electricidad","AG153","PdI6KA1s60Y"],["El guardián del bosque","AG154","2BxuvyxVo5g"],["¡Los ninjas y el llorón!","AG155","NWf2S1faR30"],["¡Un viaje en el tiempo cura todas las heridas!","AG156","o1RGpdIuC4g"],["Reina del sierpe","AG157","NwHeHp5pM4A"],["Gymkhana Pokémon","AG158","MCUpiiz_HWY"],["Harley ataca de nuevo","AG159","oOXxNOkDEkE"],["Pokémon enamorados","AG160","SI4UqN2BizU"],["Combuskión espontánea","AG161","bfQd8mTr8Qs"],["Cortando lazos de unión","AG162","sHJnAa9KpBI"],["Mucha acción y buenas vistas","AG163","go3Iq-uDH2I"],["Rey y reina por un día","AG164","GfKyRqTx3EQ"],["Frenando a la marea roja","AG165","T-lpjOVXdEg"],["¡Lo que hice por amor!","AG166","5-qRoQdelVo"],["¡Tres Jynx y un bebé!","AG167","yjSZRvvr1WQ"],["Hablando con los Pokémon","AG168","LYS1BtG5MCY"],["A la segunda va la vencida","AG169","29oBXsam6Ss"],["¡Pokémon Ranger! ¡El sufrimiento de Deoxys! (1)","AG170","h45fr00bkfg"],["¡Pokémon Ranger! ¡El sufrimiento de Deoxys! (2)","AG171","Oi3EkQBalF4"],["No es de oro todo lo que reluce","AG172","nP_6p0r2_OY"],["Nuevo complot, extraños aliados","AG173","6NJewCMhU_U"],["¡Sin respiración!","AG174","aUOQlOTO_pM"],["Reproches e intercambios","AG175","XnWJARm0rac"],["Espacios chirriantes","AG176","dJE9gpEkmd8"],["¡Combatiendo al enemigo desde dentro!","AG177","sqJbykkqYQA"],["Slaking-Kong","AG178","hhtshMGiLHM"],["¡Aura contra Harley y Drew!","AG179","f-URFJrvC3I"],["Echando el resto","AG180","X7z_EwH9P6U"],["De camino a la zona de batalla","AG181","wKiz5uyEtPc"],["¡Aipom y sus circunstancias!","AG182","0OWTtjigoRI"],["¡Estrategia mañana, esta noche comedia!","AG183","Rewi-GvK4LM"],["Duelos en la jungla","AG184","YgCUMJo3bYI"],["¡Una súper Joy!","AG185","YMFSudkUOC4"],["¡La imbatible falta de visión!","AG186","erjGo1JWBHI"],["¡Sanando las heridas!","AG187","b_Ds__00PfE"],["¡La pandilla se reúne!","AG188","dHeSm2aJEtk"],["¡El final del frente!","AG189","EYouLo5TEzU"],["¡Un día más de emociones!","AG190","D1AdKK4Yml4"],["¡El hogar es el punto de partida!","AG191","KJtXTnnhuVk"]],"10":[["¡Una doncella inicia viaje!","DP001","iPxSEVCvLLE"],["Una triste separación","DP002","cEhRR2qABTw"],["Dos mundos Pokémon opuestos","DP003","n_-A9bnRDHI"],["¡Maya y la nueva era!","DP004","1HrA6CM535A"],["¡Comprendiendo a Turtwig!","DP005","avm4LtW5oGM"],["Jugadas diferentes para chicos diferentes","DP006","FoxR2Kis_R0"],["¡Piplup: el líder!","DP007","zD4GLhMfdFg"],["¡El gimnasio de mentira!","DP008","ZnWM2Anm9MU"],["¡Ese Buneary tiene que ser mío!","DP009","Gw5KHugF3Fw"],["¡No, no me quitarás mi Poké-reloj!","DP010","MPJJDakkELM"],["¡Planeando el debut de una coordinadora!","DP011","YMTkBrJZVVY"],["¡La llegada de una rival!","DP012","qHY8xKypgnc"],["¡Ha nacido un Staravia!","DP013","W3HdbKEaPi8"],["Dejádselo a Brock","DP014","aznOmCGFJzI"],["Las formas de las cosas futuras","DP015","cp03vMTKxC0"],["Una actuación difícil de superar","DP016","M_smL-IYY6w"],["Sueltos por las calles","DP017","jD4fwPpX1bU"],["Vigilaremos a Rampardos","DP018","l7oyx7luaJg"],["De los escarmentados nacen los avisados","DP019","JYUAHcGCqvs"],["Rebelión a bordo","DP020","oN2vJW1iCWc"],["Adelante con esa evolución","DP021","RfLbbsCiUGg"],["Pidiendo un préstamo con mala fe","DP022","rKj-N6n4K74"],["¡Un Steelix con determinación de acero!","DP023","K59EZnUEpmM"],["¡Cocinando una dulce historia!","DP024","UQg8F1duyjg"],["¿Conoces la receta de los pokochos?","DP025","ELkDn_HQGqs"],["¡Con los nervios previos al concurso!","DP026","W6JOOMv1Hro"],["Ajustando una cuenta de la infancia","DP027","pOmYPJCcfRM"],["¡Drifloon vuela por el viento!","DP028","MjmzZVA4R8A"],["¡Los gemelos campeones!","DP029","pymxpFKNXOM"],["¡La miel encantada!","DP030","FZmNyH2Jzeo"],["¡El del tipo planta siempre es más verde!","DP031","gGQ1Mhd0kuA"],["¡Una combinación furiosa!","DP032","6O8sOjpFCZU"],["¡Disfrazados para el concurso Pokémon!","DP033","p7mf8QG9Wso"],["¡Ese Buizel tiene que ser mío!","DP034","kckUUc6aTiU"],["¡Encuentros y saludos del Alto Mando!","DP035","ZsCZhlhO2WM"],["¡Una esfera muy valiosa!","DP036","g6Sw9ZqjFtU"],["¡Conexión de Pokémon planta!","DP037","ykb-X-ZKoow"],["¡Crece la familia con Happiny!","DP038","uojbAJ_1pWc"],["¡Marcha en el barco a vapor!","DP039","GmyCxeTUZco"],["¡Una entrenadora de primera!","DP040","rwlFHdTPi6w"],["¡El entrenamiento especial de Maya!","DP041","8itrq4IhWsQ"],["¡La compañía Electrike!","DP042","GTVZSkGEECo"],["¡Malicia en el país de las maravillas!","DP043","pkTZg68L76o"],["¡El Hippopotas perdido!","DP044","k3TP3JZ5Th8"],["¡Caza mal intencionada!","DP045","mJ4mAlFslUg"],["¡Carreras por el laberinto!","DP046","cDh5r0XXKw8"],["¡El Sandshrew encerrado!","DP047","-TiKyX3AtGk"],["La temprana decepción de Maya","DP048","CEwSUFXxHes"],["¡Combate Corazón! ¡Allá vamos!","DP049","uPX8cBfNzvc"],["¡Resplandor de gloria!","DP050","aLm60MwHiVU"],["¡Sintiendo el espíritu de equipo!","DP051","4jjEPFwi2ZA"]],"11":[["¡Lágrimas de miedo!","DP052","oV5q1W-jrkg"],["¡Érase una vez unos campos verdes!","DP053","rxxfFhorkfM"],["¡Intercambio de Pokémon!","DP054","NZxRjlxoQVI"],["¡La piedra base reaparece!","DP055","TwEvlttH6o4"],["¡Bibarel roe mejor!","DP056","FvZa1bsPpNU"],["¡Metiendo las narices en la montaña!","DP057","jR0N3s2iJVg"],["¡Visión Luxray!","DP058","NwUhFNrIF-Y"],["¡La confusión de los Unown!","DP059","WE0kP7cbi_w"],["¡Un equipo de impacto!","DP060","WZN2SlCFZjg"],["¡Gracias por los recuerdos!","DP061",""],["¡El balneario tiene una fuga!","DP062",""],["¡Volando entre rascacielos!","DP063",""],["¡Juegos de arena!","DP064",""],["¡Estrategia de líder derrotado!","DP065",""],["¡Cruzando la línea de combate!","DP066",""],["¡Desafío tres contra tres!","DP067",""],["¡Galaxia en acción!","DP068",""],["¡El cántico de los cascabeles!","DP069",""],["¡Pokémon Ranger el secuestro de Riolu! (1ª Parte)","DP070",""],["¡Pokémon Ranger el secuestro de Riolu! (2ª Parte)","DP071",""],["¡Cruce de caminos!","DP072",""],["¡Pika contra Goliath!","DP073",""],["¡Una copa de concurso!","DP074",""],["¡Un curso intensivo de combates dúo!","DP075",""],["¡Bienvenidos héroes al escenario!","DP076",""],["¡Rivalidad entre amigos en un concurso!","DP077",""],["¡Estrategias y sonrisas!","DP078",""],["¡Los ladrones nunca paran de robar!","DP079",""],["¡Chim-char-muscado!","DP080",""],["¡Unos Croagunk de categoría!","DP081",""],["¡Todo un curso de poder destructor!","DP082",""],["¡Hambrientos de una buena vida!","DP083",""],["¡Combatiendo el miedo con miedo!","DP084",""],["¡Una pasarela con estilo!","DP085",""],["¡La barrera de los Psyduck!","DP086",""],["¡Campamento Pokémon!","DP087",""],["¡Encuentros cercanos!","DP088",""],["¡Noche de terror en el campamento!","DP089",""],["¡Un equipo, dos equipos, equipo rojo, equipo azul!","DP090",""],["¡El Team Rocket más malvado y más delgado!","DP091",""],["¡Jugando en un campo de nivel!","DP092",""],["¡El Doctor Brock!","DP093",""],["¡Batallando entre generaciones!","DP094",""],["¡Perdiendo su lustre!","DP095",""],["¡Regreso del doble equipo!","DP096",""],["¡El monstruo de la bufanda, se va de parranda!","DP097",""],["¡Reunión con el Alto Mando!","DP098",""],["¡Ayudando al enemigo!","DP099",""],["¡Barry va montando la bronca por todo!","DP100",""],["¡Un escudo giratorio!","DP101",""],["¡Abandono en el Team Rocket!","DP102",""],["¡Sin dormir antes de la batalla!","DP103",""]],"12":[["¡Pon en marcha tu Rotom!","DP104",""],["¡Una estampida movida!","DP105",""],["¡Antiguas rencillas familiares!","DP106",""],["¡Enfrentándose a defensas fuertes!","DP107",""],["¡Guiando a un extraviado!","DP108",""],["¡Robando paz mental!","DP109",""],["¡Salvando al mundo desde las ruinas!","DP110",""],["¡Alegría en la isla de los náufragos!","DP111",""],["¡Coge el Phione!","DP112",""],["¡Otro Gabite que muerde el polvo!","DP113",""],["¡Robando conversación!","DP114",""],["¡El Snorunt perdido!","DP115",""],["¡Cortando tallarines!","DP116",""],["¡Poniendo el listón muy alto!","DP117",""],["¡Pruebas de compañerismo!","DP118",""],["¡El Snover solitario!","DP119",""],["¡Parado por una cuestion de amor!","DP120",""],["¡Viejos rivales, nuevos trucos!","DP121",""],["¡Sé fiel a tu propio Pokémon!","DP122",""],["¡Batallas de monadas!","DP123",""],["¡Clases de entrenamiento!","DP124",""],["¡A por la séptima!","DP125",""],["¡Una rabia piramidal!","DP126",""],["¡Columnas de amistad!","DP127",""],["¡Detenidos en seco!","DP128",""],["¡Poniendo al límite!","DP129",""],["¡Evolucionando estrategias!","DP130",""],["¡Derrota superada!","DP131",""],["¡Un Tangrowth sanador!","DP132",""],["¡Concursando en el Grand Prix!","DP133",""],["¡Portal a las ruinas!","DP134",""],["¡Triángulo amoroso!","DP135",""],["¡La estrategia empieza en casa!","DP136",""],["¡El final del falso Oak!","DP137",""],["¡Gira histórica misteriosa!","DP138",""],["¡Desafiando a una figura de altura!","DP139",""],["¡Lo que nunca se esperaría de un Togepi!","DP140",""],["¡Un huevo revuelto!","DP141",""],["¡Lo que el Valle Eólico se llevó!","DP142",""],["¡Un rival digno de Gible!","DP143",""],["¡Vestido para el éxito de Jess!","DP144",""],["¡Una batalla de dobles, y a casa!","DP145",""],["¡Una piedra para unir a la familia!","DP146",""],["¡Pegándose a quien ya sabes tú!","DP147",""],["¡Desatando la cadena roja de acontecimientos!","DP148",""],["¡Son necesarios los tres!","DP149",""],["¡La batalla final de leyenda!","DP150",""],["¡El tesoro es mío!","DP151",""],["¡Dominando las corrientes de aire!","DP152",""],["¡Entrenamiento doble para las batallas de dobles!","DP153",""],["¡Una ascensión meteórica a los cielos!","DP154",""],["¡Atrapando a Gible!","DP155",""]],"13":[["¡Aprovechando la energía de casa!","DP156",""],["Abreviando y golpeando","DP157",""],["¡Un maratón de rivalidad!","DP158",""],["¡Sí, Dee Dee es Maya!","DP159",""],["¡En escena otra vez!","DP160",""],["¡Combatiendo ira con fuego!","DP161",""],["¡Piplup se va de casa!","DP162",""],["¡Fausto revive la chispa!","DP163",""],["¡El robo de Torre Marina!","DP164",""],["¡Enseñando a la maestra en prácticas!","DP165",""],["¡Mantenerse en la mejor forma!","DP166",""],["¡Pokémon Ranger: El rescate de Heatran!","DP167",""],["¡Un Alto Mando encubierto!","DP168",""],["¡Maya, princesa por un día!","DP169",""],["¡Con elegancia natural!","DP170",""],["¡Enfrentamiento con el fiero equipo Ditto!","DP171",""],["¡Última llamada - Primera Ronda!","DP172",""],["¡Los oponentes se complementan!","DP173",""],["¡Llega el final del festival!","DP174",""],["¡Una gran batalla por ganar!","DP175",""],["¡Por el amor de Meowth!","DP176",""],["¡La octava maravilla del mundo de Sinnoh!","DP177",""],["¡Cuatro destinos distintos en un puerto Pokémon!","DP178",""],["¡Unidos en la búsqueda del tesoro!","DP179",""],["¡Reencuentro con viejos amigos!","DP180",""],["¡Liga desenfrenada!","DP181",""],["¡Enfrentando a Polo con Benito!","DP182",""],["¡Trabajando en un movimiento eficaz!","DP183",""],["¡El conocimiento genera estrategia!","DP184",""],["¡El rival más difícil!","DP185",""],["¡El combate que romperá el hielo!","DP186",""],["¡La frontera de las semifinales!","DP187",""],["¡Una prueba para Brock!","DP188",""],["¡Los recuerdos están hechos de felicidad!","DP189",""]],"14":[["¡Bajo la sombra de Zekrom!","BW001",""],["¡Entran Iris y Axew!","BW002",""],["¡Los Sandile y los géiseres!","BW003",""],["¡El Club de Combate y la elección de Tepig!","BW004",""],["¡Líderes trillizos, triple amenaza!","BW005",""],["¡Un solar lleno de sueños!","BW006",""],["¡Snivy se resiste!","BW007",""],["¡Darmanitan, salvador de la campana!","BW008",""],["¡El entrenamiento de Axew!","BW009",""],["¡Un combate entre rivales por el Campeonato del Club!","BW010",""],["¡Una casa para Dwebble!","BW011",""],["¡La brigada Trubbish al ataque!","BW012",""],["¡Minccino limpito y aseado!","BW013",""],["¡Una noche en el museo de Ciudad Esmalte!","BW014",""],["¡El combate al estilo de Aloe!","BW015",""],["¡Revancha en el Gimnasio Esmalte!","BW016",""],["¡Scraggy, nacido para ser salvaje!","BW017",""],["¡Sewaddle y Camus en el Bosque Azulejo!","BW018",""],["¡La venganza de una sibarita!","BW019",""],["¡En danza con el trío de Ducklett!","BW020",""],["¡El mundo perdido de Gothitelle!","BW021",""],["¡Una estampida de Venipede!","BW022",""],["¡Combatiendo por amor a los Pokémon de tipo bicho!","BW023",""],["¡Emolga el irresistible!","BW024",""],["¡Emolga y el nuevo voltiocambio!","BW025",""],["¡Sustos en la mansión de los Litwick!","BW026",""],["¡El sendero del maestro dragón!","BW027",""],["¡La vieira perdida de Oshawott!","BW028",""],["¡Cottonee enamorado!","BW029",""],["¡Un ovni para Elgyem!","BW030",""],["¡El tercer combate de Ash y Trip!","BW031",""],["¡Enfrentándose al miedo con los ojos bien abiertos!","BW032",""],["¡Iris y Excadrill contra la retadragones!","BW033",""],["¡Atrapando un Roggenrola!","BW034",""],["¿Adónde habéis ido, Audino?","BW035",""],["¡Archeops en el mundo moderno!","BW036",""],["¡Un sibarita pescador en un concurso escamante!","BW037",""],["¡Momento película! ¡Zorua en \"La leyenda del caballero Pokémon\"!","BW038",""],["¡Reencuentros y combates en Mayólica!","BW039",""],["¡Millo contra Trip, Ash contra Georgia!","BW040",""],["¡Corazones y furia en el Combate de Club! ¡Emolga contra Sawk!","BW041",""],["¡La final del Combate de Club! ¡Un resultado heroico!","BW042",""],["¡Las tácticas de Meowth con Scrafty!","BW043",""],["Purrloin: ¿Dulce o malicioso?","BW044",""],["¡Beheeyem, Duosion y el ladrón de sueños!","BW045",""],["¡Enemistad entre los Beartic de la montaña!","BW046",""],["¡Crisis en el metro!","BW047",""],["¡Combate por el metro!","BW048",""]],"15":[["¡Entra Camila, la electrificante líder de gimnasio!","BW049",""],["¡Combate deslumbrante en el Gimnasio Mayólica!","BW050",""],["¡Perdidos en la caza de sellos!","BW051",""],["¡Ash contra el Campeón!","BW052",""],["¡Un musical Maractus!","BW053",""],["¡Las cuatro estaciones de Sawsbuck!","BW054",""],["¡Scraggy y la Gothita caprichosa!","BW055",""],["¡El Deino solitario!","BW056",""],["¡El poderoso Accelguardián al rescate!","BW057",""],["¡Una llamada de amor fraternal!","BW058",""],["¡Deteniendo la furia de las leyendas! (1ª Parte)","BW059",""],["¡Deteniendo la furia de las leyendas! (2ª Parte)","BW060",""],["¡Combatiendo contra el rey de las minas!","BW061",""],["¡Problemas en la Cueva Electrorroca!","BW062",""],["¡Emocionante evolución por intercambio!","BW063",""],["¡Los exploradores de las Ruinas del Héroe!","BW064",""],["¡Combatiendo contra el chulito!","BW065",""],["¡Desconcertando a los Bouffalant!","BW066",""],["¡Millo alza el vuelo!","BW067",""],["¡Un impresionante combate aéreo!","BW068",""],["¡Escalando la torre del éxito!","BW069",""],["¡Comienza el Clubombazo!","BW070",""],["¡Puntuando para la final del Clubombazo!","BW071",""],["¡Un Clubombazo a tope de emoción!","BW072",""],["¡Imponiendo la corona del Clubombazo!","BW073",""],["¡Combatiendo a los ladrones de hojas!","BW074",""],["¡Confrontación por clonación! (1ª Parte)","BW075",""],["¡Confrontación por clonación! (2ª Parte)","BW076",""],["¡Evolución bajo fuego!","BW077",""],["¡Protegiendo al Guardián de la Montaña!","BW078",""],["¡Precaución: gélidas condiciones de combate!","BW079",""],["¡Conflicto entre sibaritas!","BW080",""],["¡Crisis en Investigaciones Ferroseed!","BW081",""],["¡Fuerzas defensivas de leyenda!","BW082",""],["¡Rock and roll en el Gimnasio Hormigón! (1ª Parte)","BW083",""],["¡Rock and roll en el Gimnasio Hormigón! (2ª Parte)","BW084",""],["¡Todo por el amor de Meloetta!","BW085",""],["¡Piplup, Pansage y un encuentro de los viejos tiempos!","BW086",""],["¡Expedición a Isla Onix!","BW087",""],["¡El misterio del Cubchoo perdido!","BW088",""],["¡Iris y el Dragonite solitario!","BW089",""],["¡A empujón limpio por la Copa Júnior!","BW090",""],["¡Combatiendo de nuevo contra la autoridad!","BW091",""],["¡Ash, Iris y Trip: y quedaron tres!","BW092",""],["¡Adiós, Copa Júnior - Hola, aventura!","BW093",""],["¡El camino a Ciudad Marga!","BW094",""],["¡Conflicto en jardín de infancia!","BW095",""],["¡Meloetta y el templo submarino!","BW096",""],["¡La supervivencia de Teselia en peligro!","BW097",""]],"16":[["¡Bellezas combatiendo por orgullo y prestigio!","BW098",""],["¡Equipo de batalla de dobles tierra aire!","BW099",""],["¡Regreso a la aldea!","BW100",""],["¡Lirio contra Iris: pasado, presente y futuro!","BW101",""],["¡El equipo Eevee y la Brigada de rescate Pokémon!","BW102",""],["¡Arriba el telón, Liga de Teselia!","BW103",""],["¡Misión: derrotar a tu rival!","BW104",""],["¡Perdido en la liga!","BW105",""],["¡Estrategia fuerte, espectáculo asegurado!","BW106",""],["¡El arma secreta de Cameron!","BW107",""],["¡Evolución en la Liga de Teselia!","BW108",""],["¡Nuevos lugares, rostros familiares!","BW109",""],["¡Su nombre es N!","BW110",""],["¡Hay un nuevo líder de gimnasio en la ciudad!","BW111",""],["¡Complot poder Pokémon del Equipo Plasma!","BW112",""],["¡La luz del Rancho Ocre!","BW113",""],["¡Salvando a Braviary!","BW114",""],["¡La patrulla portuaria Pokémon!","BW115",""],["¡El calor de un reencuentro al rojo vivo!","BW116",""],["¡El Equipo Plasma manipula a los Pokémon!","BW117",""],["¡Secretos que salen de la niebla!","BW118",""],["¡Meowth, Acromo y Equipos rivales!","BW119",""],["¡Ash y N: un choque de ideales!","BW120",""],["¡El Equipo Plasma y la ceremonia del despertar!","BW121",""],["¡Lo que hay tras la verdad y los ideales!","BW122",""],["¡Adiós, Teselia! ¡Zarpando hacia nuevas aventuras!","BW123",""],["¡Peligro, dulce como la miel!","BW124",""],["¡Millo y el caso del Purrloin testigo!","BW125",""],["¡Coronando al Rey de la Vieira!","BW126",""],["¡La isla de los espejismos!","BW127",""],["¡Atrapando a un Rotom!","BW128",""],["¡Los piratas de Decoloras!","BW129",""],["¡Butterfree y yo!","BW130",""],["¡El sendero que conduce al adiós!","BW131",""],["¡En busca de un deseo!","BW132",""],["¡El ovni de la Isla Gigantia!","BW133",""],["¡La reportera de otra región!","BW134",""],["¡El misterio de la isla desierta!","BW135",""],["¡Un Pokémon de un color diferente!","BW136",""],["¡La celebración del Cometa del Héroe!","BW137",""],["¡Vamos, Gogoat!","BW138",""],["¡Sorprendente unión al Team Rocket!","BW139",""],["¡La supervivencia del Gimnasio Gres!","BW140",""],["¡Mucha suerte hasta que volvamos a vernos!","BW141",""],["¡El sueño continúa!","BW142",""]],"17":[["¡Kalos, donde empiezan los sueños y las aventuras!","XY001",""],["¡Persecución en Ciudad Luminalia!","XY002",""],["¡Un combate de movilidad aérea!","XY003",""],["¡Una amistad de auténtico impacto!","XY004",""],["¡Un tempestuoso combate de gimnasio en Novarte!","XY005",""],["¡Combatiendo sobre una capa de hielo!","XY006",""],["¡Persecución en las carreras de Rhyhorn!","XY007",""],["¡Peinando a Furfrou!","XY008",""],["¡Lem tiene un secreto!","XY009",""],["¡Un Mega-Mega-Meowth de locos!","XY010",""],["¡El bosque de bambú!","XY011",""],["¡Atrapar a un contrabandista Pokémon!","XY012",""],["¡Caos en el cole!","XY013",""],["¡Refugiándose de la tormenta!","XY014",""],["¡Apetito de combate!","XY015",""],["¡Un intercambio electrizante!","XY016",""],["¡Sabiduría ninja a raudales!","XY017",""],["¡Despertando al gigante dormido!","XY018",""],["¡Conspiración derrotada!","XY019",""],["¡Ganando títulos en el bastión!","XY020",""],["¡Próximamente en Poké-visión!","XY021",""],["¡Tras el dorado!","XY022",""],["¡Volviendo al frío!","XY023",""],["¡Escalando muros!","XY024",""],["¡El combate más dulce!","XY025",""],["¡Buscando una flor hada!","XY026",""],["¡Los vínculos de la evolución!","XY027",""],["¡De héroes-amigos e impostores!","XY028",""],["¡Megarrevelaciones!","XY029",""],["¡La cueva de las pruebas!","XY030",""],["¡Aura tormentosa!","XY031",""],["¡Llamando desde más allá del aura!","XY032",""],["¡Los vínculos de la megaevolución!","XY033",""],["¡El campeón del bosque!","XY034",""],["¡Combates en el aire!","XY035",""],["¡La Cueva de los Reflejos!","XY036",""],["¡Haciendo amigos en el bosque!","XY037",""],["¡Verano de descubrimientos!","XY038",""],["¡Las superproducciones del tercer día!","XY039",""],["¡Una orientación Pokémon neblinosa!","XY040",""],["¡Combatiendo por el Hall de la Fama!","XY041",""],["¡Los orígenes de la megaevolución!","XY042",""],["¡La hora de la verdad en el Gimnasio Yantra!","XY043",""],["¡Discusiones tontas!","XY044",""],["¡El torpe llorón acaba con el caos!","XY045",""],["¡Soñando el sueño de una estrella Pokémon!","XY046",""],["¡Reencuentro en el campus!","XY047",""],["¡Clem por la defensa!","XY048",""]],"18":[["¡De camino a una actuación en equipo!","XY049",""],["¡Cuando colisionan la luz y la oscuridad!","XY051",""],["¡Un lugar submarino llamado hogar!","XY050",""],["¡Un desafío sigiloso!","XY052",""],["¡Una carrera por la vuelta a casa!","XY053",""],["¡Enfrentándose al grandioso plan!","XY054",""],["¡Un encuentro muy baboso!","XY055",""],["¡Una para Goomy!","XY056",""],["¡Derritiendo un pánico helador!","XY057",""],["¡Los Pokémon de tipo planta más verdes del hogar!","XY058",""],["¡Bajo el árbol de la promesa!","XY059",""],["¡Debut en el gran espectáculo!","XY060",""],["¡Un oasis de esperanza!","XY061",""],["¡La determinación alumbra nuestro camino hacia el futuro!","XY062",""],["¡Una encrucijada! ¡La separación!","XY063",""],["¡Combatiendo con elegancia y una gran sonrisa!","XY064",""],["¡Un gran entrenamiento entre buenos amigos!","XY065",""],["¡Enfrentándose a la oscuridad!","XY066",""],["¡El momento de la verdad en Luminalia!","XY067",""],["¡El megavínculo de Garchomp!","XY068",""],["¡Defendiendo la tierra natal!","XY069",""],["¡Más allá del arcoíris!","XY070",""],["¡Así que tienes un mal día!","XY071",""],["¡Hospitalidad tétrica!","XY072",""],["¡Un combate muy glamuroso!","XY073",""],["¡Estratagema de tipo hada!","XY074",""],["¡Rivales: hoy y mañana!","XY075",""],["¡Un comienzo no muy volador!","XY076",""],["¡Carrera aérea de relevos!","XY077",""],["¡Persecución frenética en la fábrica!","XY078",""],["¡Una actuación con mucho encanto!","XY079",""],["¡El deseo de Rotom!","XY080",""],["¡La fiesta del intercambio! ¿Fiesta de despedida?","XY081",""],["¡Travesía por la montaña nevada!","XY082",""],["¡Viviendo aventuras haciendo recados!","XY083",""],["¡Sanando un espíritu quebrado!","XY084",""],["¡Una sesión de fotos legendaria!","XY085",""],["¡La cuidadora pequeñina!","XY086",""],["¡Un viaje subterráneo en el tren de los recuerdos!","XY087",""],["¡Un hallazgo bailarín entre las flores!","XY088",""],["¡Luces, cámara y Pika-acción!","EE16",""],["¡Inspirándose con la batalla de dobles!","XY089",""],["¡Una actuación con concurso!","XY090",""],["¡Destino nublado, futuro brillante!","XY091",""],["¡Mirando hacia el futuro!","XY092",""]],"19":[["¡De la A a la Z!","XY093",""],["¡Loco de amor por Eevee!","XY094",""],["¡Una gigabatalla con megarresultados!","XY095",""],["¡Un feroz rito de iniciación!","XY096",""],["¡Sueña un ratito conmigo!","XY097",""],["¡La leyenda del héroe ninja!","XY098",""],["¡Un festival de decisiones!","XY099",""],["¡El baile del debut!","XY100",""],["¡Encuentro en la Cueva Desenlace!","XY101",""],["¡Una conexión celular!","XY102",""],["¡Un encuentro barrido por el viento!","XY103",""],["¡La fiesta de la danza!","XY104",""],["¡Un encuentro de dos viajes!","XY105",""],["¡Una operación explosiva!","XY106",""],["¡A la búsqueda de agua!","XY107",""],["¡Eligiendo para la Clase Maestra!","XY108",""],["¡Una furia electrizante!","XY109",""],["¡Abriendo puertas a la admiración!","XY110",""],["¡Comienza la Clase Maestra!","XY111",""],["¡Coreografiando un camino hacia el futuro!","XY112",""],["¡Por favor, cásate con mi hermanito!","XY113",""],["¡Combatiendo a todo volumen!","XY114",""],["¡La prueba de la sincronización!","XY115",""],["¡Haciendo amigos y espantando a los enemigos!","XY116",""],["¡Un combate de investigación con la Campeona!","XY117",""],["¡Un combate sorpresa a toda potencia!","XY118",""],["¡Gran granizada sobre el campo de batalla helado!","XY119",""],["¡Los árboles no te dejan ver el bosque!","XY120",""],["¡Todo un rompehielos!","XY121",""],["¡Un diamante en bruto!","XY122",""],["¡Un sinfín de artilugios grandiosos!","XY123",""],["¡Una liga propia!","XY124",""],["¡Una valiosa experiencia para todos!","XY125",""],["¡Análisis versus pasión!","XY126",""],["¡Una rivalidad fascinante!","XY127",""],["¡El Team Flare visita la apasionante Liga de Kalos!","XY128",""],["¡Una final no apta para cobardicas!","XY129",""],["¡Una final apasionante!","XY130",""],["¡Una toma de poder por todo lo alto!","XY131",""],["¡Destruyendo sueños!","XY132",""],["¡El héroe perfecto para el trabajo perfecto!","XY133",""],["¡Movilizando las defensas de Kalos!","XY134",""],["¡Formando la unión perfecta!","XY135",""],["¡Empezando a partir de cero!","XY136",""],["¡El primer día del resto de tu vida!","XY137",""],["¡Afrontando las necesidades de la mayoría!","XY138",""],["¡Hasta que volvamos a competir!","XY139",""]],"20":[["¡Alola a nuevas aventuras!","SM001",""],["¡El recorrido del espíritu!","SM002",""],["¡Cargando la Dex...!","SM003",""],["¡Primera captura en Alola, al estilo Ketchum!","SM004",""],["¡Tres hurras para Popplio!","SM005",""],["¡Una compra de comida muy movidita!","SM006",""],["¡Por eso Litten es un ladronzuelo!","SM007",""],["¡El emocionante desafío del huevo de Lylia!","SM008",""],["¡Superar a un dominante!","SM009",""],["¡Prueba y decepción!","SM010",""],["¡La granja de Kiawe!","SM011",""],["¡Sol, sustos y nueva base secreta!","SM012",""],["¡Una carrera por un gran acontecimiento!","SM013",""],["¡Empezando a conocernos!","SM014",""],["¡Combatiendo en la Colina Huellazarpas!","SM015",""],["¡Viajando en superglobo!","SM016",""],["¡Una investigación transparente como el cristal!","SM017",""],["¡Una búsqueda de temporada!","SM018",""],["¡La revancha del guardián de la isla!","SM019",""],["¡Promesas de compañeros!","SM020",""],["¡Un viaje termina, otro comienza!","SM021",""],["¡La escalofriante búsqueda de la pala!","SM022",""],["¡Volviendo a reunir al grupo!","SM023",""],["¡Día de puertas abiertas en Alola!","SM024",""],["¡Peleílla entre equipos!","SM025",""],["¡Hasta la vista, Chris!","SM026",""],["¡Un rival de mirada penetrante!","SM027",""],["¡Lanzamiento de la bola rasa en béisbol Pokémon!","SM028",""],["¡Arrullados hasta el reino de los sueños!","SM029",""],["¡Intercambio de Pokémon!","SM030",""],["¡La susurradora de la isla!","SM031",""],["¡Búsqueda del tesoro al estilo de Akala!","SM032",""],["¡El gran y pequeño pececillo!","SM033",""],["¡Coronando el momento de la verdad!","SM034",""],["¡Curriándose el favor y el sabor!","SM035",""],["¡Pruebas y determinaciones!","SM036",""],["¡Resurgiendo de las ruinas!","SM037",""],["¡Desenmascarando a Mimikyu!","SM038",""],["¡Lulú y el maestro del bosque!","SM039",""],["¡Globos, Brionne y beligerancia!","SM040",""],["¡Una carrera con una carga electrizante!","SM041",""],["¡Alola, Kanto!","SM042",""],["¡Combates entre regiones!","SM043",""]],"21":[["¡Un sueño de encuentros!","SM044",""],["¡Ahora los ves, ahora no!","SM045",""],["¡Las apariencias engañan!","SM046",""],["¡Una advertencia enmascarada!","SM047",""],["¡La noche de las mil poses!","SM048",""],["¡Misión: recuerdo total!","SM049",""],["¡La venganza de Fabio!","SM050",""],["¡Determinación familiar!","SM051",""],["¡La revelación de una leyenda!","SM052",""],["¡Rescatando a los controlados!","SM053",""],["¡Miles de gigarazones por las que luchar!","SM054",""],["¡La nueva aventura de los profesores!","SM055",""],["¡Dejad que duerman los Pokémon!","SM056",""],["¡RotomDex se mete en líos!","SM057",""],["¡Conteniendo las lágrimas!","SM058",""],["¡Un sabor agridulce!","SM059",""],["¡Dando un salto en la competición!","SM060",""],["¡Una misión ultraurgente!","SM061",""],["¡Comportándose de una forma adecuada!","SM062",""],["¡Echando fuego a más no poder!","SM063",""],["¡Despertando admiración y entrenando duro!","SM065",""],["¡Golpeando con Esquema!","SM066",""],["¡Amor a la primera pirueta!","SM067",""],["¡Experiencia real de trabajo!","SM068",""],["¡Despega y brilla, nave estelar!","SM069",""],["¡La juventud ardiente contraataca!","SM070",""],["¡Atrapando a Nereida!","SM071",""],["¡Endulzando lo ácido!","SM072",""],["¡Consiguiendo una pulsera Z!","SM073",""],["¡Las pruebas del tipo duro!","SM074",""],["¡Un Pokémon un tanto perezoso!","SM075",""],["¡Un combate de armas tomar!","SM076",""],["¡Canalizando la furia!","SM077",""],["¡Petardos y chispas!","SM078",""],["¡Lluvia de amor en el mundo!","SM079",""],["¡Protegiendo la cueva!","SM080",""],["¡Un nuevo Enmascarado pisa el cuadrilátero!","SM081",""],["¡Lo único que quieren es bailar sin parar!","SM082",""],["¡Bobo, has encogido a los niños!","SM083",""],["¡Dibujando con mucho amor!","SM084",""],["¡El gran salto de plinto a casa!","SM085",""],["¡Te elijo a ti, paraíso!","SM086",""],["¡Tapando la luz con oscuridad!","SM087",""],["¡Solgaleo y Lunala en peligro!","SM088",""],["¡El prisma entre luz y oscuridad!","SM089",""],["¡Asegurando el futuro!","SM090",""],["¡Pikachu a tutiplén!","SM091",""],["¡Intercambiando la máscara!","SM092",""]],"22":[["¡Lyliana y la vara!","SM093",""],["¡Una casa encantada para cada uno!","SM094",""],["¡Confusión chispeante!","SM095",""],["¡Stufful, el pequeñajo!","SM096",""],["¡No dejar piedra sobre piedra!","SM097",""],["¡Luces, acción y grandes cambios!","SM098",""],["¡Eevee, sabemos a dónde vas!","SM099",""],["¡Combatiendo contra el ente interior!","SM100",""],["¡Amistades paralelas!","SM101",""],["¡Alola, Alola!","SM102",""],["¡Corazón de fuego, corazón de piedra!","SM103",""],["¡Investigación isleña con sabor picante!","SM104",""],["¡Enfrentamiento en Poni!","SM105",""],["¡Investigación de la evolución!","SM106",""],["¡Corred, héroes, corred!","SM107",""],["¡Recuerdos en la niebla!","SM108",""],["¡Un gran debut!","SM109",""],["¡Los ojos en la pelota!","SM110",""],["¡Comiendo metal!","SM111",""],["¡La amistad de Meltan!","SM112",""],["¡Momentos mágikos!","SM113",""],["¡La belleza está en el cristal!","SM114",""],["¡El jefe destructor!","SM115",""],["¡La princesa secreta!","SM116",""],["¡Las cosas del viento!","SM117",""],["¡Aspirando a la planta más alta!","SM118",""],["¡Un despertar a toda velocidad!","SM119",""],["¡El Kyogre al que dejé ir!","SM120",""],["¡Una receta para el éxito!","SM121",""],["¡Espiando para el jefazo!","SM122",""],["¡Engaño en el campamento de entrenamiento!","SM123",""],["¡Viviendo al filo de la navaja!","SM124",""],["¡Un encuentro en el tiempo!","SM125",""],["¡La emocionante aventura de Pikachu!","SM126",""],["¡Persiguiendo recuerdos, creando sueños!","SM127",""],["¡Atacantes y defensores de la Liga!","SM128",""],["¡Battle Royal 151!","SM129",""],["¡Compitiendo con amigos!","SM130",""],["¡El campo de batalla de la verdad y el amor!","SM131",""],["¡La imitación es la mejor de las estrategias!","SM132",""],["¡Combates alados!","SM133",""],["¡De camino a las semifinales!","SM134",""],["¡Los cuatro finalistas!","SM135",""],["¡Combatiendo con ira!","SM136",""],["¡Lo sensato es no huir!","SM137",""],["¡Rivales en las finales!","SM138",""],["¡Ya tenemos campeón!","SM139",""],["¡Duelo de movimientos Z!","SM140",""],["¡Exhibición sin máscara!","SM141",""],["¡Un combate completo de recompensa!","SM142",""],["¡Sorpresas llameantes!","SM143",""],["¡Movimientos Z deslumbrantes!","SM144",""],["¡Sueños \"Sol y Luna\"!","SM145",""],["¡Gracias, Alola! ¡Y el viaje continúa!","SM146",""]],"23":[["¡Conociendo a Pikachu!","JN001",""],["¿Leyenda? ¡Adelante! ¿Amigos? ¡Adelante!","JN002",""],["¡La torre misteriosa de los Ivysaur!","JN003",""],["¡Conociendo a Scorbunny!","JN004",""],["¡El fenómeno Dinamax!","JN005",""],["¡Y luego volveré a por Mew!","JN006",""],["¡El torneo de la Copa Flauta!","JN007",""],["¡La Carrera Iceberg de Sinnoh!","JN008",""],["¡En busca de una leyenda!","JN009",""],["¡Experiencia en el paraíso!","JN010",""],["¡El mejor amigo... la peor pesadilla!","JN011",""],["¡Resplandor de titanes!","JN012",""],["¡Ascendiendo para ser el mejor!","JN013",""],["¡Incursión en las ruinas!","JN014",""],["¡Búsqueda en un día nevado!","JN015",""],["¡Una maldición escalofriante!","JN016",""],["¡Pateando como si no hubiera un mañana!","JN017",""],["¡Destino coronación!","JN018",""],["¡Talento para la imitación!","JN019",""],["¡De lo que están hechos los sueños!","JN020",""],["¡Cuidando a un misterio!","JN021",""],["¡Adiós, amigo!","JN022",""],["¡Pánico en el parque!","JN023",""],["¡Vacaciones para el Team Rocket!","JN024",""],["¡Reencuentro en el festival!","JN025",""],["¡Saltos de altura por la corona! / ¡La coronación de Slowking!","JN026",""],["¡Haciéndose más fuertes!","JN027",""],["¡Sobble, el llorica!","JN028",""],["¡Nuevo compañero en la ciudad!","JN029",""],["¡Traicionado, enfadado y celoso!","JN030",""],["¡El coeficiente de monería!","JN031",""],["¡De un tiempo a otro!","JN032",""],["¡Intercambiar, prestar y robar!","JN033",""],["¡Solitaria y amenazadora!","JN034",""],["Atrapar... ¿Un qué?","JN035",""],["¡Librando combates en la arena!","JN036",""],["¡Esa vieja y nueva pandilla!","JN037",""],["¡Clonación y renovación!","JN038",""],["¡Octobloqueo en el gimnasio!","JN039",""],["¡Una incursión chisporroteante!","JN040",""],["¡Aprendiendo a traducir a Pikachu! / ¡Enterrado hasta el cuello!","JN041",""],["¡Espada y Escudo: el Bosque Oniria!","JN042",""],["¡Espada y Escudo: la Negra Noche!","JN043",""],["¡Espada y Escudo: de aquí a Eternatus!","JN044",""],["¡Espada y Escudo: el despertar de las leyendas!","JN045",""],["¡Un combate de lo más inesperado!","JN046",""],["¡Coronando al devorador de comida!","JN047",""],["¡Intercambio con \"casi Pikachu\"!","JN048",""]],"24":[["¡Entrenar o no entrenar!","JN049",""],["¡Un hueso de aquí, un hueso de allá!","JN050",""],["¡Pruebas para un futuro maestro!","JN051",""],["¡Cómo hacer que se vayan de la granja!","JN052",""],["¡Sanando al sanador!","JN053",""],["¡Sobble espía una estrategia sigilosa!","JN054",""],["¡Cuento del Bosque Lumirinto y tú!","JN055",""],["¡En busca de la caballería!","JN056",""],["¡Recuerdos de una cálida bondad!","JN057",""],["¡Rodando sin control! / ¡Carrera hacia la meta!","JN058",""],["¡El verdadero hogar de Grookey!","JN059",""],["Más allá de la caballería... ¡Aspirando a ser Maestro Puerro!","JN060",""],["¡Siempre a su servicio con una sonrisa!","JN061",""],["¡Juntos, pero separados!","JN062",""],["¡En tierra, en el mar, y hacia el futuro!","JN063",""],["¡Absolver a Absol!","JN064",""],["¡Duelo feroz entre titanes!","JN065",""],["¡La noche revela su color!","JN066",""],["¡Detectives en acción!","JN067",""],["¡Aconsejando a Goh!","JN068",""],["¡Haciendo recados!","JN069",""],["¡Llevaos a mi ladrón, porfi!","JN070",""],["¡Un salto hacia el sueño!","JN071",""],["¡Intercambio de Pokémon bajo tierra!","JN072",""],["¡Entrenando... al líder de la banda!","JN073",""],["¡Al anochecer..., pesadillas!","JN074",""],["¡Luz de una noche de verano!","JN075",""],["¡A tope, a más no poder!","JN076",""],["¡Superemocionante desde el impactante comienzo!","JN077",""],["¡Detective Drizzile!","JN078",""],["¡Noche y día, dos en uno!","JN079",""],["¡La prueba de las escamas doradas!","JN080",""],["¡Locos por el azul!","JN081",""],["¡El dulce sabor del combate!","JN082",""],["¡Estrella nocturna, estrella voladora!","JN083",""],["¡Una aventura de megaproporciones!","JN084",""],["¡Tercer combate contra Judith!","JN085",""],["¡Un combate mega contra max!","JN086",""],["¡Rompiendo el hielo!","JN087",""],["¡A por la segunda ficha!","JN088",""],["¡Los portales de la distorsión!","JN089",""],["¡Enfrentamiento en los portales de la distorsión!","JN090",""]],"25":[["¡El tren espectral!","JN091",""],["¡El sinuoso camino hacia la grandeza!","JN092",""],["¡El nombre lo dice todo!","JN093",""],["¡El desamor de Heracross y el amor de Pinsir!","JN094",""],["¡El bueno, el malo y el afortunado!","JN095",""],["¡Iluminando el camino a casa!","JN096",""],["¡Un sabor en evolución!","JN097",""],["¡Fuera de sus elementos!","JN098",""],["¡Combatiendo a la undécima potencia!","JN099",""],["¡Encuentro con el monarca!","JN100",""],["¡Un portento con una sola baqueta!","JN101",""],["¡Combatiendo en una incursión congeladora!","JN102",""],["¡Otro glorioso momento en el que la ciencia alumbra nuestro camino hacia el futuro!","JN103",""],["¡Formando un equipo de dos!","JN104",""],["¡Reencontrándose por primera vez!","JN105",""],["¡La radio calmó a las estrellas malvadas!","JN106",""],["¡Hermano mayor al rescate!","JN107",""],["¡Atrapando el aura del destino!","JN108",""],["¡Aspirando a los ocho!","JN109",""],["¡Reduciendo el grupo de rastreadores!","JN110",""],["¡Regreso al hogar!","JN111",""],["¡Apoyando al héroe local!","JN112",""],["¡Rastreando hasta el final!","JN113",""],["¡Amigos y rivales, prestadme vuestro espíritu!","JN114",""],["¡Se abre el telón! ¡A luchar!","JN115",""],["¡Orgullo de un campeón!","JN116",""],["¡El abrasador camino hacia la maestría!","JN117",""],["¡Combates de máxima dureza!","JN118",""],["¡Infinitas posibilidades!","JN120",""],["¡Y llega el momento campeón!","JN122",""],["¡Embrujar, combatir y desconcertar!","JN123",""],["¡Valor, una parte estratégica del combate!","JN124",""],["¡Trabajando y eliminando!","JN125",""],["¡A solo un tiro de bollito de aquí!","JN127",""],["¡Una inundación de logros torrenciales!","JN129",""],["¡Jugando con tus movimientos!","JN130",""],["¡Bloqueando al son del tambor!","JN131",""],["¡Compañeros en el tiempo!","JN132",""],["¡A la búsqueda de Mew!","JN133",""],["¡En las palmas de nuestras manos!","JN134",""],["¡Los héroes juntos de nuevo!","JN135",""],["¡Esto podría ser el comienzo de algo grande!","JN136",""]],"fin":[["¡El camino más transitado!","JN137",""],["¡Un enfrentamiento predestinado!","JN138",""],["¡Nuestros héroes y la Hechicera del Bosque!","JN139",""],["¡Controlando el poder del hielo!","JN140",""],["¡Un escuadrón digno de admiración!","JN141",""],["¡La misma luna, ahora y para siempre!","JN142",""],["¡Cabalga, Lapras, cabalga!","JN143",""],["¡Llegando al corazón de las cosas!","JN144",""],["¡Los Rocket-Vengadores!","JN145",""],["¡Ash y Latios!","JN146",""],["¡El arcoíris y el Maestro Pokémon!","JN147",""]]};
+
+  const REGIONS = {
+    kanto:   { name: "Kanto",          c: ["#d6453d", "#f08a3c"] },
+    naranja: { name: "Islas Naranja",  c: ["#ef7f2f", "#18a39f"] },
+    johto:   { name: "Johto",          c: ["#b88a1c", "#76839c"] },
+    hoenn:   { name: "Hoenn",          c: ["#c2303f", "#2457b8"] },
+    frontera:{ name: "Kanto (Frontera)", c: ["#7a3fb0", "#d6453d"] },
+    sinnoh:  { name: "Sinnoh",         c: ["#3a7bd2", "#c9739f"] },
+    teselia: { name: "Teselia",        c: ["#2b2f3a", "#7d869b"] },
+    kalos:   { name: "Kalos",          c: ["#2c62c9", "#cf3649"] },
+    alola:   { name: "Alola",          c: ["#ee8a22", "#6a3fb8"] },
+    mundo:   { name: "Todas las regiones", c: ["#1c8bd1", "#e3a900"] },
+  };
+
+  const GROUPS = [
+    { id: "orig", title: "Serie original", sub: "Kanto, Islas Naranja y Johto" },
+    { id: "ag",   title: "Advanced",        sub: "Hoenn y la Batalla de la Frontera" },
+    { id: "dp",   title: "Diamante y Perla", sub: "Sinnoh" },
+    { id: "bw",   title: "Negro y Blanco",  sub: "Teselia" },
+    { id: "xy",   title: "XY",              sub: "Kalos" },
+    { id: "sm",   title: "Sol y Luna",      sub: "Alola" },
+    { id: "jn",   title: "Viajes",          sub: "Todas las regiones y el final de Ash" },
+  ];
+
+  // label, data key, title in Spain, original title, region, years, group, official season playlist
+  const RAW = [
+    ["T1",  "1",  "¡Hazte con todos!",                       "Indigo League",                     "kanto",    "1997–1998", "orig", "PLRcHmntfmJ8CnSmj4C284-a1euH518aQa"],
+    ["T2",  "2",  "Las Islas Naranja",                       "Adventures in the Orange Islands",  "naranja",  "1998–1999", "orig", "PLRcHmntfmJ8AtnKq7EHNIQBUNTs85bqwS"],
+    ["T3",  "3",  "The Johto Journeys",                      "The Johto Journeys",                "johto",    "1999–2000", "orig", "PLRcHmntfmJ8DB8wgMrUZwf3JGkLM17yeL"],
+    ["T4",  "4",  "Johto League Champions",                  "Johto League Champions",            "johto",    "2000–2001", "orig", "PLRcHmntfmJ8A7vV0RYnAu0farLTV_T1i2"],
+    ["T5",  "5",  "Master Quest",                            "Master Quest",                      "johto",    "2001–2002", "orig", "PLRcHmntfmJ8BNWmL3MICuc1Oh5Mxf2qEh"],
+    ["T6",  "6",  "Advanced",                                "Advanced",                          "hoenn",    "2002–2003", "ag",   "PLRcHmntfmJ8AYULKvzhleQPgPRinNDpc0"],
+    ["T7",  "7",  "Advanced Challenge",                      "Advanced Challenge",                "hoenn",    "2003–2004", "ag",   "PLRcHmntfmJ8BWeT4kzalbhx1r43bJv7pI"],
+    ["T8",  "8",  "Advanced Battle",                         "Advanced Battle",                   "hoenn",    "2004–2005", "ag",   "PLRcHmntfmJ8BdccTC3w86qIBdUjNDfPGV"],
+    ["T9",  "9",  "Battle Frontier",                         "Battle Frontier",                   "frontera", "2005–2006", "ag",   "PLRcHmntfmJ8DzeYoWwk7RsAbl2w-sg0zR"],
+    ["T10", "10", "Diamante y Perla",                        "Diamond and Pearl",                 "sinnoh",   "2006–2007", "dp",   "PLJCkfNkMHldU"],
+    ["T11", "11", "DP: Battle Dimension",                    "DP: Battle Dimension",              "sinnoh",   "2007–2008", "dp",   "PLcVo6_-BE45A"],
+    ["T12", "12", "DP: Combates Galácticos",                 "DP: Galactic Battles",              "sinnoh",   "2008–2009", "dp",   ""],
+    ["T13", "13", "DP: Los Vencedores de la Liga de Sinnoh", "DP: Sinnoh League Victors",         "sinnoh",   "2009–2010", "dp",   ""],
+    ["T14", "14", "Negro y Blanco",                          "Black & White",                     "teselia",  "2010–2011", "bw",   ""],
+    ["T15", "15", "Negro y Blanco: Destinos Rivales",        "BW: Rival Destinies",               "teselia",  "2011–2012", "bw",   ""],
+    ["T16", "16", "Negro y Blanco: Aventuras en Teselia y más allá", "BW: Adventures in Unova and Beyond", "teselia", "2012–2013", "bw", ""],
+    ["T17", "17", "Temporada XY",                            "XY",                                "kalos",    "2013–2014", "xy",   ""],
+    ["T18", "18", "XY: Expediciones en Kalos",               "XY: Kalos Quest",                   "kalos",    "2014–2015", "xy",   ""],
+    ["T19", "19", "Temporada XYZ",                           "XYZ",                               "kalos",    "2015–2016", "xy",   ""],
+    ["T20", "20", "Sol y Luna",                              "Sun & Moon",                        "alola",    "2016–2017", "sm",   ""],
+    ["T21", "21", "Sol y Luna: Ultraaventuras",              "Sun & Moon: Ultra Adventures",      "alola",    "2017–2018", "sm",   ""],
+    ["T22", "22", "Sol y Luna: Ultraleyendas",               "Sun & Moon: Ultra Legends",         "alola",    "2018–2019", "sm",   ""],
+    ["T23", "23", "Viajes Pokémon",                          "Pokémon Journeys",                  "mundo",    "2019–2020", "jn",   ""],
+    ["T24", "24", "Viajes Maestros Pokémon",                 "Pokémon Master Journeys",           "mundo",    "2020–2021", "jn",   ""],
+    ["T25", "25", "Viajes Definitivos Pokémon",              "Pokémon Ultimate Journeys",         "mundo",    "2021–2022", "jn",   ""],
+    ["Fin", "fin","Aventuras de un Maestro Pokémon",         "To Be a Pokémon Master",            "mundo",    "2023",      "jn",   ""],
+  ];
+
+  const SEASONS = RAW.map(([label, dk, name, en, region, years, group, playlist], i) => ({
+    id: "s" + (i + 1), idx: i, label, name, en, region, years, group, playlist,
+    c: REGIONS[region].c, eps: DATA[dk] || [],
+  }));
+  const EPISODES = [];
+  for (const s of SEASONS) {
+    s.keys = []; s.thumbN = 0;
+    s.eps.forEach(([title, code, v], i) => {
+      const ep = { key: s.id + "-" + (i + 1), s, n: i + 1, title, code, v, gi: EPISODES.length, ti: v ? s.thumbN++ : -1 };
+      EPISODES.push(ep); s.keys.push(ep.key);
+    });
+    s.count = s.keys.length;
+    s.videos = s.eps.filter(e => e[2]).length;
+    s.status = s.videos === 0 ? "soon" : s.videos === s.count ? "free" : "part";
+  }
+  const BY_KEY = new Map(EPISODES.map(e => [e.key, e]));
+  const fmt = n => n.toLocaleString("es-ES");
+
+  /* ---------- Episode info from WikiDex: tags for search, details per season on demand ---------- */
+  const TAG_TYPES = { e: "Momento", l: "Lugar", c: "Personaje", p: "Pokémon" };
+  let TAGS = null;
+  fetch("info/tags.json").then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(js => {
+    TAGS = js.vocab.map((t, i) => ({ id: i, type: t[0], label: t.slice(2), hay: norm(t.slice(2)), count: 0 }));
+    for (const ep of EPISODES) {
+      ep.tags = (js.tags[ep.key] || []).map(i => TAGS[i]);
+      for (const t of ep.tags) t.count++;
+      ep.hay = ep.titleHay + " " + ep.tags.map(t => t.hay).join(" ");
+    }
+    renderRows(); rerenderSheet();
+  }).catch(() => { TAGS = []; });
+  const infoCache = new Map();
+  function loadInfo(s) {
+    if (!infoCache.has(s.id)) infoCache.set(s.id, fetch(`info/${s.id}.json`).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).catch(e => { infoCache.delete(s.id); throw e; }));
+    return infoCache.get(s.id);
+  }
+  const wikiUrl = w => "https://www.wikidex.net/wiki/" + encodeURIComponent(w);
+
+  /* ---------- State: account (db) with browser fallback ---------- */
+  let state = { watched: {}, links: {}, last: null };
+
+  const isSafeUrl = u => { try { const x = new URL(u); return x.protocol === "https:" || x.protocol === "http:"; } catch { return false; } };
+  function clean(o) {
+    const out = { watched: {}, links: {}, last: null };
+    if (!o || typeof o !== "object") return out;
+    if (o.watched && typeof o.watched === "object") for (const k in o.watched) if (BY_KEY.has(k) && o.watched[k]) out.watched[k] = 1;
+    if (o.links && typeof o.links === "object") for (const k in o.links) if (BY_KEY.has(k) && typeof o.links[k] === "string" && isSafeUrl(o.links[k])) out.links[k] = o.links[k];
+    if (typeof o.last === "string" && BY_KEY.has(o.last)) out.last = o.last;
+    return out;
+  }
+  function loadLocal() { try { const raw = localStorage.getItem(LS_KEY); return raw ? clean(JSON.parse(raw)) : null; } catch { return null; } }
+  function saveLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch {} }
+
+  let cloudRef = null, timer = null, writing = false, again = false;
+  const syncEl = document.getElementById("sync"), syncText = document.getElementById("syncText");
+  function setSync(mode) {
+    syncEl.dataset.mode = mode;
+    syncText.textContent = mode === "cloud" ? "Progreso guardado en tu cuenta"
+      : mode === "saving" ? "Guardando…" : "Progreso guardado en este navegador";
+  }
+  function persist() {
+    saveLocal();
+    if (!cloudRef) return;
+    setSync("saving");
+    clearTimeout(timer);
+    timer = setTimeout(() => { timer = null; flush(); }, 700);
+  }
+  async function flush() {
+    if (!cloudRef) return;
+    if (writing) { again = true; return; }
+    writing = true;
+    try {
+      await cloudRef.set({ watched: state.watched, links: state.links, last: state.last });
+      setSync("cloud");
+    } catch (e) {
+      if (e && e.code === "unavailable") { setTimeout(flush, 1500 + Math.random() * 1500); }
+      else { cloudRef = null; setSync("local"); }
+    } finally {
+      writing = false;
+      if (again) { again = false; flush(); }
+    }
+  }
+  async function initCloud() {
+    if (!window.claude || typeof window.claude.use !== "function") return;
+    try {
+      const [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+      if (!db || !user) return;
+      const id = await user.id();
+      if (!id) return;
+      const ref = db.doc("data/users/" + id + "/progress");
+      const snap = await ref.get();
+      const local = state;
+      if (snap.exists) {
+        const remote = clean(snap.data());
+        state = {
+          watched: Object.assign({}, local.watched, remote.watched),
+          links: Object.assign({}, local.links, remote.links),
+          last: remote.last || local.last,
+        };
+      }
+      cloudRef = ref;
+      const differs = !snap.exists || JSON.stringify(clean(snap.data())) !== JSON.stringify(state);
+      if (differs && (Object.keys(state.watched).length || Object.keys(state.links).length || state.last)) persist();
+      else setSync("cloud");
+      saveLocal();
+      renderAll();
+      ref.onSnapshot(s => {
+        if (!s.exists || s.metadata.hasPendingWrites || timer || writing || again) return;
+        const remote = clean(s.data());
+        if (JSON.stringify(remote) === JSON.stringify(state)) return;
+        state = remote; saveLocal(); renderAll();
+      }, () => { /* live updates stopped; writes still work */ });
+    } catch { cloudRef = null; setSync("local"); }
+  }
+
+  /* ---------- Helpers ---------- */
+  const watchedIn = s => s.keys.reduce((a, k) => a + (state.watched[k] ? 1 : 0), 0);
+  const totalWatched = () => Object.keys(state.watched).length;
+  function watchUrl(ep) {
+    if (state.links[ep.key]) return state.links[ep.key];
+    if (ep.v) return "https://www.youtube.com/watch?v=" + ep.v;
+    return CHANNEL + "/search?query=" + encodeURIComponent(ep.title);
+  }
+  function watchLabel(ep) {
+    if (state.links[ep.key]) return "Ver";
+    return ep.v ? "Ver aquí" : "Buscar en el canal";
+  }
+  function nextEpisode() {
+    const start = state.last ? BY_KEY.get(state.last).gi : 0;
+    for (let i = start; i < EPISODES.length; i++) if (!state.watched[EPISODES[i].key]) return EPISODES[i];
+    for (let i = 0; i < start; i++) if (!state.watched[EPISODES[i].key]) return EPISODES[i];
+    return null;
+  }
+  function h(tag, props, ...kids) {
+    const n = document.createElement(tag);
+    if (props) for (const k in props) {
+      const v = props[k];
+      if (v == null || v === false) continue;
+      if (k === "class") n.className = v;
+      else if (k === "style") n.setAttribute("style", v);
+      else if (k === "html") n.innerHTML = v;
+      else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+      else n.setAttribute(k, v === true ? "" : v);
+    }
+    for (const c of kids.flat()) if (c != null && c !== false) n.append(c.nodeType ? c : document.createTextNode(c));
+    return n;
+  }
+  const colorVars = s => `--c1:${s.c[0]};--c2:${s.c[1]}`;
+  const seasonWord = s => s.label === "Fin" ? "Final" : "Temporada " + (s.idx + 1);
+  // Official thumbnails, one sprite per season (episodes with a video, in order)
+  function thumbStyle(ep) {
+    if (!ep.v || ep.ti < 0) return null;
+    const c = ep.s.thumbN, y = c > 1 ? (ep.ti / (c - 1)) * 100 : 0;
+    return `background-image:url("thumbs/${ep.s.id}.jpg");background-size:100% ${c * 100}%;background-position:0 ${y}%`;
+  }
+  function thumbEl(ep) {
+    const t = thumbStyle(ep);
+    return h("span", { class: "ep-thumb" + (t ? "" : " none"), style: t || colorVars(ep.s), "aria-hidden": "true", onclick: () => openEpisode(ep) }, t ? null : String(ep.n));
+  }
+  const toastEl = document.getElementById("toast");
+  let toastTimer = null;
+  const usePopover = typeof toastEl.showPopover === "function";
+  if (usePopover) toastEl.hidden = false;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    if (usePopover) { try { toastEl.hidePopover(); } catch {} try { toastEl.showPopover(); } catch {} } else toastEl.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { if (usePopover) { try { toastEl.hidePopover(); } catch {} } else toastEl.hidden = true; }, 3800);
+  }
+  const MEDAL_SHAPES = [[6, 1], [8, 1], [4, 1], [5, .5], [6, .62], [3, 1], [8, .72], [5, 1], [10, .55], [7, 1], [4, .58], [12, .82]];
+  function medalPoints(i) {
+    const [n, inner] = MEDAL_SHAPES[i % MEDAL_SHAPES.length];
+    const steps = inner < 1 ? n * 2 : n, pts = [];
+    for (let k = 0; k < steps; k++) {
+      const r = inner < 1 && k % 2 ? 10.5 * inner : 10.5, a = -Math.PI / 2 + (k * 2 * Math.PI) / steps;
+      pts.push((12 + r * Math.cos(a)).toFixed(2) + "," + (12 + r * Math.sin(a)).toFixed(2));
+    }
+    return pts.join(" ");
+  }
+  function renderMedals() {
+    const box = document.getElementById("medals");
+    let got = 0;
+    box.innerHTML = "";
+    for (const s of SEASONS) {
+      const w = watchedIn(s), done = w === s.count;
+      if (done) got++;
+      const b = h("button", { class: "medal" + (done ? " got" : ""), type: "button", title: `${s.label} · ${s.name}: ${done ? "¡medalla conseguida!" : `${w} de ${s.count} vistos`}`, "aria-label": `Medalla de ${s.label}, ${s.name}: ${done ? "conseguida" : `${w} de ${s.count} vistos`}`, onclick: () => openSeason(s.id) });
+      const pts = medalPoints(s.idx);
+      b.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="mg${s.idx}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${s.c[0]}"/><stop offset="1" stop-color="${s.c[1]}"/></linearGradient></defs><polygon class="shape" points="${pts}"${done ? ` style="fill:url(#mg${s.idx})"` : ""}/>${done ? '<ellipse class="shine" cx="9" cy="8" rx="3" ry="1.6" transform="rotate(-30 9 8)"/>' : ""}</svg>`;
+      box.append(b);
+    }
+    document.getElementById("medalCount").textContent = `${got}/${SEASONS.length}`;
+  }
+  const ICON_PLAY = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.6-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>';
+  const ICON_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  const ICON_LINK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg>';
+  const ICON_BALL = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#f4f4f4" stroke="#1b1b22" stroke-width="2"/><path d="M2 12a10 10 0 0 1 20 0z" fill="#e3350d" stroke="#1b1b22" stroke-width="2"/><circle cx="12" cy="12" r="3.2" fill="#fff" stroke="#1b1b22" stroke-width="2"/></svg>';
+  const ICON_PREV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>';
+  const ICON_NEXT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
+  const ICON_CLOSE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+
+  function setWatched(key, on) {
+    const s = BY_KEY.get(key).s, before = watchedIn(s) === s.count;
+    if (on) state.watched[key] = 1; else delete state.watched[key];
+    persist();
+    if (!before && watchedIn(s) === s.count) toast(`¡Medalla conseguida! Has terminado ${s.label}: ${s.name}`);
+  }
+  function setLast(key) { state.last = key; persist(); }
+
+  /* ---------- Static copy built from the data ---------- */
+  function renderIntro() {
+    const full = SEASONS.filter(s => s.status === "free");
+    const part = SEASONS.filter(s => s.status === "part");
+    const vids = SEASONS.reduce((a, s) => a + s.videos, 0);
+    const lastFull = full.length ? full[full.length - 1].idx + 1 : 0;
+    document.getElementById("heroText").textContent =
+      `${SEASONS.length - 1} temporadas y ${fmt(EPISODES.length)} capítulos, de 1997 a 2023. ` +
+      `${fmt(vids)} se pueden ver gratis aquí mismo, desde el canal oficial TV Pokémon de YouTube.`;
+    let status = `Comprobado el ${CHECKED_ON}: temporadas 1 a ${lastFull} completas`;
+    if (part.length) status += part.map(s => `, y la ${s.idx + 1} a medias (${s.videos} de ${s.count} capítulos)`).join("");
+    status += ". El canal sube unos 5 capítulos por semana; los que salgan después se buscan en el canal por su título.";
+    document.getElementById("tipStatus").textContent = status;
+  }
+
+  /* ---------- Hero ---------- */
+  function renderHero() {
+    const box = document.getElementById("next");
+    box.replaceChildren();
+    const ep = nextEpisode();
+    const seen = totalWatched();
+    document.getElementById("heroTitle").textContent = seen ? "Continúa tu viaje" : "¡Hazte con todos los capítulos!";
+    if (!ep) {
+      box.append(
+        h("div", { class: "next-art", style: colorVars(SEASONS[SEASONS.length - 1]) }, h("span", { class: "t" }, "Has visto todo el viaje de Ash")),
+        h("div", { class: "next-body" }, h("span", null, `${fmt(EPISODES.length)} capítulos, de Pueblo Paleta a Maestro Pokémon.`))
+      );
+      return;
+    }
+    const s = ep.s;
+    const watchBtn = h("a", { class: "btn", href: watchUrl(ep), target: "_blank", rel: "noopener", "data-play": canPlayHere(ep) ? ep.key : null, html: ICON_PLAY + "<span></span>", onclick: () => { setLast(ep.key); setTimeout(renderAll, 0); } });
+    watchBtn.querySelector("span").textContent = watchLabel(ep);
+    box.append(
+      h("div", { class: "next-art", style: colorVars(s) },
+        ep.v ? h("span", { class: "next-thumb", style: thumbStyle(ep), "aria-hidden": "true" }) : null,
+        h("span", { class: "big", "aria-hidden": "true" }, s.label),
+        h("span", { class: "t" }, s.name)),
+      h("div", { class: "next-body" },
+        h("div", { class: "next-meta" },
+          h("span", { class: "eyebrow" }, (seen ? "Siguiente · " : "Empieza aquí · ") + "Episodio " + ep.n),
+          h("button", { class: "next-title", type: "button", title: "Ver la ficha del capítulo", onclick: () => openEpisode(ep) }, ep.title),
+          h("span", { class: "code" }, s.label + " · " + ep.code + " · " + REGIONS[s.region].name)),
+        h("div", { class: "actions" },
+          watchBtn,
+          h("button", { class: "btn ghost", type: "button", html: ICON_BALL + "Marcar como visto", onclick: () => { setWatched(ep.key, true); setLast(ep.key); renderAll(); } }),
+          h("button", { class: "btn ghost", type: "button", onclick: () => openSeason(s.id, ep.key) }, "Ver temporada")))
+    );
+  }
+
+  /* ---------- Journey strip ---------- */
+  function renderStrip() {
+    const strip = document.getElementById("strip");
+    strip.replaceChildren(...SEASONS.map(s => {
+      const w = watchedIn(s), pct = (w / s.count) * 100;
+      return h("button", {
+        class: "seg", type: "button", style: colorVars(s) + `;flex-grow:${s.count}`,
+        title: `${s.label} · ${s.name}: ${w}/${s.count}`, "aria-label": `${s.label}, ${s.name}: ${w} de ${s.count} vistos`,
+        onclick: () => openSeason(s.id),
+      }, h("i", { style: `width:${pct}%` }));
+    }));
+    const seen = totalWatched();
+    document.getElementById("watchedCount").textContent = fmt(seen);
+    document.getElementById("totalCount").textContent = fmt(EPISODES.length);
+    const pct = (seen / EPISODES.length) * 100;
+    document.getElementById("journeyPct").textContent = (pct > 0 && pct < 1 ? pct.toFixed(1) : Math.round(pct)).toString().replace(".", ",") + " %";
+    renderMedals();
+  }
+  function renderRegions() {
+    const used = [...new Set(SEASONS.map(s => s.region))];
+    document.getElementById("regions").replaceChildren(...used.map(r => h("span", { style: `--c1:${REGIONS[r].c[0]};--c2:${REGIONS[r].c[1]}` }, REGIONS[r].name)));
+  }
+
+  /* ---------- Rails and search ---------- */
+  let filter = "all", query = "", activeTag = null, hitLimit = 40;
+  const norm = t => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[\u00a1!\u00bf?.,:;"'()]/g, " ");
+  for (const e of EPISODES) { e.titleHay = norm(e.title); e.hay = e.titleHay; e.tags = e.tags || []; }
+  const CODE_RE = /^(ep|ag|dp|bw|xy|sm|jn)\s*0*(\d{1,3})$/i;
+  function findByCode(text) {
+    const m = text.trim().match(CODE_RE);
+    if (!m) return null;
+    const code = m[1].toUpperCase() + String(+m[2]).padStart(3, "0");
+    return EPISODES.find(e => e.code === code) || null;
+  }
+  function tokens(q) { return norm(q).split(/\s+/).filter(Boolean); }
+  function seasonMatches(s) {
+    const w = watchedIn(s);
+    if (filter === "free" && s.status === "soon") return false;
+    if (filter === "progress" && !(w > 0 && w < s.count)) return false;
+    if (filter === "todo" && w > 0) return false;
+    if (!query) return true;
+    const byCode = findByCode(query);
+    if (byCode) return byCode.s === s;
+    const hay = norm([s.label, s.name, s.en, REGIONS[s.region].name, s.years, seasonWord(s)].join(" "));
+    return tokens(query).every(t => hay.includes(t));
+  }
+  function episodeMatches() {
+    if (activeTag) return EPISODES.filter(e => e.tags.includes(activeTag));
+    if (!query) return [];
+    const byCode = findByCode(query);
+    if (byCode) return [byCode];
+    const ts = tokens(query);
+    if (!ts.length || query.trim().length < 3) return [];
+    const inTitle = [], inTags = [];
+    for (const e of EPISODES) {
+      if (!ts.every(t => e.hay.includes(t))) continue;
+      (ts.every(t => e.titleHay.includes(t)) ? inTitle : inTags).push(e);
+    }
+    return inTitle.concat(inTags);
+  }
+  function tagSuggestions() {
+    if (activeTag || !TAGS || !query || query.trim().length < 2 || findByCode(query)) return [];
+    const qn = norm(query).trim();
+    return TAGS.filter(t => t.hay.includes(qn))
+      .sort((a, b) => (b.hay.startsWith(qn) - a.hay.startsWith(qn)) || b.count - a.count)
+      .slice(0, 12);
+  }
+  function tagChip(t, withCount) {
+    return h("button", { class: "tag tag-" + t.type, type: "button", title: `${TAG_TYPES[t.type]}: ver capítulos`, onclick: () => searchTag(t) },
+      t.label, withCount ? h("span", { class: "n" }, fmt(t.count)) : null);
+  }
+  function searchTag(t) {
+    activeTag = t; hitLimit = 40; q.value = ""; query = "";
+    if (epd.open) epd.close();
+    if (sheet.open) sheet.close();
+    renderRows();
+    document.getElementById("rows").scrollIntoView({ block: "start" });
+  }
+  function searchTagLabel(type, label) {
+    const t = TAGS && TAGS.find(x => x.type === type && x.label === label);
+    if (t) searchTag(t);
+  }
+  function eventChips(ep) {
+    const ev = ep.tags.filter(t => t.type === "e" && t.label !== "Debut").slice(0, 4);
+    return ev.length ? h("span", { class: "ep-tags" }, ev.map(t => h("span", { class: "tag tag-e" }, t.label))) : null;
+  }
+  const BADGE = { free: ["free", "Gratis"], part: ["part", "Subiendo"], soon: ["soon", "Pronto"] };
+  function poster(s) {
+    const w = watchedIn(s);
+    const [cls, label] = w === s.count ? ["done", "Medalla"] : BADGE[s.status];
+    const avail = s.status === "free" ? "Gratis ahora" : s.status === "part" ? `${s.videos} de ${s.count} capítulos gratis` : "Aún no está en el canal gratuito";
+    return h("button", {
+      class: "poster", type: "button", style: colorVars(s),
+      "aria-label": `${s.label}: ${s.name}. ${s.count} capítulos, ${w} vistos. ${avail}`,
+      onclick: () => openSeason(s.id),
+    },
+      h("span", { class: "poster-num", "aria-hidden": "true" }, s.label),
+      h("span", { class: "badge " + cls }, label),
+      h("span", { class: "poster-title" }, s.name),
+      h("span", { class: "poster-meta" }, `${REGIONS[s.region].name} · ${s.count} caps. · ${s.years}`),
+      h("span", { class: "poster-bar" }, h("i", { style: `width:${(w / s.count) * 100}%` }))
+    );
+  }
+  function renderRows() {
+    const rows = document.getElementById("rows");
+    const out = [];
+    const hits = episodeMatches();
+    const sugg = tagSuggestions();
+    if (activeTag) {
+      out.push(h("div", { class: "active-tag row" },
+        h("span", { class: "row-head" }, h("h2", null, "Capítulos con"), null),
+        tagChip(activeTag),
+        h("button", { class: "btn small ghost", type: "button", onclick: () => { activeTag = null; renderRows(); } }, "Quitar etiqueta")));
+    }
+    if (sugg.length) {
+      out.push(h("section", { class: "row", "aria-label": "Etiquetas" },
+        h("div", { class: "row-head" }, h("h2", null, "Etiquetas"), h("span", null, "Toca una para ver todos sus capítulos")),
+        h("div", { class: "tag-sugg" }, sugg.map(t => tagChip(t, true)))));
+    }
+    if (hits.length) {
+      const shown = hits.slice(0, hitLimit);
+      out.push(h("section", { class: "row", "aria-label": "Capítulos encontrados" },
+        activeTag ? null : h("div", { class: "row-head" }, h("h2", null, "Capítulos"), null),
+        h("p", { class: "hits-count" }, hits.length > shown.length ? `${fmt(shown.length)} de ${fmt(hits.length)} capítulos` : `${fmt(hits.length)} ${hits.length === 1 ? "capítulo" : "capítulos"}`),
+        h("ul", { class: "hits" }, shown.map(e => h("li", null,
+          h("button", { class: "hit" + (state.watched[e.key] ? " watched" : ""), type: "button", style: colorVars(e.s), onclick: () => openEpisode(e) },
+            h("span", { class: "hit-tag" }, e.s.label),
+            h("span", { class: "hit-text" }, h("b", null, e.title), h("span", { class: "code" }, `Episodio ${e.n} · ${e.code}`), eventChips(e)))))),
+        hits.length > shown.length ? h("div", { class: "more-row" }, h("button", { class: "btn small ghost", type: "button", onclick: () => { hitLimit += 80; renderRows(); } }, "Mostrar más")) : null));
+    }
+    if (activeTag) { rows.replaceChildren(...out); return; }
+    for (const g of GROUPS) {
+      const list = SEASONS.filter(s => s.group === g.id && seasonMatches(s));
+      if (!list.length) continue;
+      out.push(h("section", { class: "row", "aria-label": g.title },
+        h("div", { class: "row-head" }, h("h2", null, g.title), h("span", null, g.sub)),
+        h("div", { class: "rail" }, list.map(poster))));
+    }
+    if (!out.length) out.push(h("p", { class: "empty" }, "No hay nada que coincida. Prueba con parte del título de un capítulo, una región o un código como EP012 o XY094."));
+    rows.replaceChildren(...out);
+  }
+
+  /* ---------- Season sheet ---------- */
+  const sheet = document.getElementById("sheet");
+  let openId = null;
+  function epItem(ep) {
+    const on = !!state.watched[ep.key];
+    const li = h("li", { class: "ep" + (on ? " watched" : "") + (state.last === ep.key ? " is-last" : ""), "data-key": ep.key });
+    const cb = h("input", { type: "checkbox", class: "ball", id: "w-" + ep.key, checked: on, "aria-label": "Visto: " + ep.title });
+    cb.addEventListener("change", () => {
+      if (cb.checked) cb.classList.add("caught");
+      setWatched(ep.key, cb.checked);
+      li.classList.toggle("watched", cb.checked);
+      refreshSheetTools(); renderHero(); renderStrip(); renderRows();
+    });
+    const open = h("button", { class: "ep-open", type: "button", title: "Ver la ficha del capítulo", onclick: () => openEpisode(ep) },
+      h("b", null, ep.title), h("span", { class: "code" }, `Episodio ${ep.n} · ${ep.code}`), eventChips(ep));
+    const watch = h("a", { class: "btn small watch" + (ep.v || state.links[ep.key] ? "" : " ghost"), href: watchUrl(ep), target: "_blank", rel: "noopener", "data-play": canPlayHere(ep) ? ep.key : null, "aria-label": `${watchLabel(ep)}: ${ep.title}`, html: ICON_PLAY + '<span class="watch-txt"></span>' });
+    watch.querySelector(".watch-txt").textContent = watchLabel(ep);
+    watch.addEventListener("click", () => {
+      setLast(ep.key);
+      sheet.querySelectorAll(".ep.is-last").forEach(n => n.classList.remove("is-last"));
+      li.classList.add("is-last"); renderHero();
+    });
+    li.append(thumbEl(ep), cb, open, watch);
+    return li;
+  }
+
+  /* ---------- Episode card ---------- */
+  const epd = document.getElementById("epd");
+  let epdKey = null;
+  const SPOIL_KEY = "maraton-ash-spoilers";
+  let showSpoilers = false;
+  try { showSpoilers = localStorage.getItem(SPOIL_KEY) === "1"; } catch {}
+  function linkSection(ep) {
+    const hasLink = !!state.links[ep.key];
+    const input = h("input", { type: "url", id: "l-" + ep.key, placeholder: "Pega aquí el enlace del vídeo", value: state.links[ep.key] || "", "aria-label": "Enlace para este capítulo" });
+    const err = h("span", { class: "err", hidden: true });
+    const form = h("form", { class: "ep-link" },
+      input,
+      h("button", { class: "btn small", type: "submit" }, "Guardar"),
+      hasLink ? h("button", { class: "btn small ghost", type: "button", onclick: () => { delete state.links[ep.key]; persist(); openEpisode(ep); rerenderSheet(); } }, "Quitar") : null,
+      err);
+    form.addEventListener("submit", e => {
+      e.preventDefault();
+      const v = input.value.trim();
+      if (!isSafeUrl(v)) { err.textContent = "Ese enlace no es válido. Copia la dirección completa del vídeo, que empieza por https://"; err.hidden = false; return; }
+      state.links[ep.key] = v; persist(); openEpisode(ep); rerenderSheet();
+    });
+    return h("details", { class: "epd-sec epd-link", open: hasLink },
+      h("summary", null, hasLink ? "Estás usando tu propio enlace para este capítulo" : "Usar otro enlace para este capítulo"),
+      form);
+  }
+  function fillEpisode(body, ep, d) {
+    const out = [];
+    const tags = ep.tags.filter(t => t.type !== "p");
+    if (tags.length) out.push(h("div", { class: "tag-list", "aria-label": "Etiquetas" }, tags.map(t => tagChip(t))));
+    if (!d) {
+      out.push(h("p", { class: "epd-loading" }, "WikiDex no tiene ficha de este capítulo."));
+    } else {
+      if (d.f) document.getElementById("epdSub").textContent += ` · En España: ${d.f}`;
+      const storyBody = h("div", { class: "story", hidden: !showSpoilers },
+        d.a.length ? d.a.map(p => h("p", null, p)) : h("p", null, "WikiDex aún no tiene el argumento de este capítulo."),
+        d.more ? h("p", null, h("a", { href: wikiUrl(d.w), target: "_blank", rel: "noopener" }, "Sigue leyendo el argumento en WikiDex")) : null,
+        d.h.length ? [h("h4", null, "Momentos clave"), h("ul", null, d.h.map(x => h("li", null, x)))] : null);
+      const always = h("input", { type: "checkbox", id: "always-spoil", checked: showSpoilers });
+      always.addEventListener("change", () => {
+        showSpoilers = always.checked;
+        try { localStorage.setItem(SPOIL_KEY, showSpoilers ? "1" : "0"); } catch {}
+        if (showSpoilers) { gate.hidden = true; storyBody.hidden = false; }
+      });
+      const gate = h("div", { class: "spoiler-gate", hidden: showSpoilers },
+        h("p", null, "El argumento cuenta todo lo que pasa, final incluido."),
+        h("button", { class: "btn small", type: "button", onclick: () => { gate.hidden = true; storyBody.hidden = false; } }, "Mostrar argumento"),
+        h("label", { class: "always", for: "always-spoil" }, always, "Mostrarlo siempre"));
+      out.push(h("section", { class: "epd-sec" }, h("h3", null, "Argumento"), gate, storyBody));
+      if (d.p.length) {
+        const debuts = d.p.filter(x => x[2]).length;
+        out.push(h("section", { class: "epd-sec" },
+          h("h3", null, "Pokémon que aparecen"),
+          h("p", { class: "epd-note" }, `${d.p.length} Pokémon${debuts ? `, ${debuts} de ellos aparecen por primera vez en el anime` : ""}. Toca uno para ver en qué otros capítulos sale.`),
+          h("ul", { class: "mons" }, d.p.map(([sp, ow, deb]) => h("li", null,
+            h("button", { class: "mon", type: "button", onclick: () => searchTagLabel("p", sp.replace(/\s*\(.*?\)\s*/g, "").trim()) },
+              h("b", null, sp), ow ? h("span", null, ow) : null, deb ? h("i", null, "Debut") : null))))));
+      }
+      if (d.q) {
+        const ans = h("b", { class: "q-answer", hidden: true }, `¡Es ${d.q}!`);
+        const btn = h("button", { class: "q-reveal", type: "button", onclick: () => { btn.hidden = true; ans.hidden = false; } }, "Descubrirlo");
+        out.push(h("div", { class: "quien" }, h("span", { class: "q-title" }, "¿Quién es ese Pokémon?"), btn, ans));
+      }
+      if (d.c.length) out.push(h("section", { class: "epd-sec" }, h("h3", null, "Curiosidades"), h("ul", { class: "curios" }, d.c.map(x => h("li", null, x)))));
+    }
+    out.push(linkSection(ep));
+    out.push(h("p", { class: "epd-src" }, "Ficha basada en ",
+      h("a", { href: wikiUrl(d ? d.w : "Lista de episodios"), target: "_blank", rel: "noopener" }, "WikiDex"),
+      ", con licencia ", h("a", { href: "https://creativecommons.org/licenses/by-sa/3.0/deed.es", target: "_blank", rel: "noopener" }, "CC BY-SA 3.0"), "."));
+    body.replaceChildren(...out);
+  }
+  function openEpisode(ep) {
+    epdKey = ep.key;
+    const s = ep.s, on = !!state.watched[ep.key];
+    epd.setAttribute("style", colorVars(s));
+    const watchBtn = h("a", { class: "btn", href: watchUrl(ep), target: "_blank", rel: "noopener", "data-play": canPlayHere(ep) ? ep.key : null, html: ICON_PLAY + "<span></span>", onclick: () => { setLast(ep.key); renderHero(); rerenderSheet(); } });
+    watchBtn.querySelector("span").textContent = watchLabel(ep);
+    const seenBtn = h("button", { class: "btn ghost", type: "button", "aria-pressed": String(on), html: ICON_BALL + "<span></span>", onclick: () => {
+      setWatched(ep.key, !state.watched[ep.key]); openEpisode(ep); renderHero(); renderStrip(); renderRows(); rerenderSheet();
+    } });
+    seenBtn.querySelector("span").textContent = on ? "Visto" : "Marcar como visto";
+    const prev = EPISODES[ep.gi - 1], next = EPISODES[ep.gi + 1];
+    const body = h("div", { class: "epd-body" }, h("p", { class: "epd-loading loading" }, "Cargando la ficha…"));
+    epd.replaceChildren(
+      h("div", { class: "epd-head" },
+        h("div", { class: "dex-top", "aria-hidden": "true" }, h("span", { class: "lens" }), h("span", { class: "leds" }, h("i"), h("i"), h("i")), h("span", { class: "dex-label" }, "Pokédex de capítulos")),
+        h("div", { class: "dex-main" },
+          h("div", { class: "screen", "aria-hidden": "true" },
+            ep.v ? h("div", { class: "screen-img", style: thumbStyle(ep) }) : h("div", { class: "screen-img none", style: colorVars(s) }, String(ep.n))),
+          h("div", { class: "dex-text" },
+            h("div", { class: "eyebrow" }, `${s.label} · ${s.name}`),
+            h("h2", { id: "epdTitle" }, ep.title),
+            h("div", { class: "sub", id: "epdSub" }, `${seasonWord(s)} · Episodio ${ep.n} · ${ep.code}`))),
+        h("button", { class: "close", type: "button", "aria-label": "Cerrar", html: ICON_CLOSE, onclick: () => epd.close() })),
+      h("div", { class: "epd-actions" }, watchBtn, ep.v ? h("a", { class: "btn ghost", href: "https://www.youtube.com/watch?v=" + ep.v, target: "_blank", rel: "noopener" }, "YouTube") : null, seenBtn,
+        h("span", { class: "epd-nav" },
+          h("button", { class: "icon-btn", type: "button", disabled: !prev, "aria-label": "Capítulo anterior", title: prev ? "Anterior: " + prev.title : null, html: ICON_PREV, onclick: () => prev && openEpisode(prev) }),
+          h("button", { class: "icon-btn", type: "button", disabled: !next, "aria-label": "Capítulo siguiente", title: next ? "Siguiente: " + next.title : null, html: ICON_NEXT, onclick: () => next && openEpisode(next) }))),
+      body);
+    if (!epd.open) { try { epd.showModal(); } catch { epd.setAttribute("open", ""); } }
+    epd.scrollTop = 0;
+    loadInfo(s).then(all => { if (epdKey === ep.key) fillEpisode(body, ep, all[ep.key]); })
+      .catch(() => { if (epdKey === ep.key) body.replaceChildren(h("p", { class: "epd-loading" }, "No se ha podido cargar la ficha. Comprueba la conexión y vuelve a abrir el capítulo."), linkSection(ep)); });
+  }
+  epd.addEventListener("close", () => { epdKey = null; });
+  epd.addEventListener("click", e => { if (e.target === epd) epd.close(); });
+
+  function refreshSheetTools() {
+    if (!openId) return;
+    const s = SEASONS.find(x => x.id === openId);
+    const w = watchedIn(s);
+    const prog = sheet.querySelector(".prog");
+    if (prog) prog.textContent = `${w} de ${s.count} vistos`;
+    const all = sheet.querySelector("[data-all]");
+    if (all) all.textContent = w === s.count ? "Desmarcar todos" : "Marcar todos como vistos";
+  }
+  function openSeason(id, focusKey) {
+    const s = SEASONS.find(x => x.id === id);
+    if (!s) return;
+    openId = id;
+    sheet.setAttribute("style", colorVars(s));
+    const tools = h("div", { class: "sheet-tools" },
+      s.playlist
+        ? h("a", { class: "btn small", href: "https://www.youtube.com/playlist?list=" + s.playlist, target: "_blank", rel: "noopener", html: ICON_PLAY + "Lista de la temporada en YouTube" })
+        : h("a", { class: "btn small", href: JUSTWATCH, target: "_blank", rel: "noopener" }, "Dónde verla (JustWatch)"),
+      h("button", { class: "btn small ghost", type: "button", "data-all": "", onclick: () => {
+        const allOn = watchedIn(s) === s.count;
+        for (const k of s.keys) { if (allOn) delete state.watched[k]; else state.watched[k] = 1; }
+        persist();
+        if (!allOn) toast(`¡Medalla conseguida! Has terminado ${s.label}: ${s.name}`); openSeason(s.id); renderHero(); renderStrip(); renderRows();
+      } }, ""),
+      h("span", { class: "prog" }));
+    const note = s.status === "free"
+      ? h("p", { class: "sheet-note" }, "«Ver aquí» abre el capítulo en el reproductor de la página, desde el canal oficial TV Pokémon.")
+      : s.status === "part"
+        ? h("p", { class: "sheet-note", html: `<b>El canal está subiendo esta temporada.</b> De momento hay ${s.videos} de ${s.count} capítulos. Los demás se buscan en el canal por su título, así que funcionarán en cuanto los suban.` })
+        : h("p", { class: "sheet-note", html: "<b>Esta temporada aún no está en el canal gratuito.</b> El botón de cada capítulo lo busca en el canal por si ya lo han subido. Mientras tanto, JustWatch te dice en qué plataformas se puede ver en España." });
+    sheet.replaceChildren(
+      h("div", { class: "sheet-head" },
+        h("div", { class: "eyebrow" }, `${seasonWord(s)} · ${REGIONS[s.region].name} · ${s.years}`),
+        h("h2", { id: "sheetTitle" }, s.name),
+        h("div", { class: "sub" }, `${s.en !== s.name ? s.en + " · " : ""}${s.count} capítulos · ${s.eps[0][1]}–${s.eps[s.count - 1][1]}`),
+        h("button", { class: "close", type: "button", "aria-label": "Cerrar", html: ICON_CLOSE, onclick: () => sheet.close() })),
+      tools, note,
+      h("ol", { class: "eps" }, EPISODES.filter(e => e.s === s).map(epItem)));
+    refreshSheetTools();
+    if (!sheet.open) { try { sheet.showModal(); } catch { sheet.setAttribute("open", ""); } }
+    const target = focusKey ? sheet.querySelector(`[data-key="${focusKey}"]`) : sheet.querySelector(".ep.is-last");
+    if (target) {
+      target.scrollIntoView({ block: "center" });
+      if (focusKey) { target.classList.add("flash"); setTimeout(() => target.classList.remove("flash"), 1600); }
+    } else sheet.querySelector(".eps").scrollTop = 0;
+  }
+  sheet.addEventListener("close", () => { openId = null; });
+  sheet.addEventListener("click", e => { if (e.target === sheet) sheet.close(); });
+
+  /* ---------- Built-in player (YouTube IFrame API) ---------- */
+  const player = document.getElementById("player");
+  const pl = id => document.getElementById(id);
+  let ytApi = null, ytPlayer = null, playing = null, nextTimer = null, nextLeft = 0;
+  function canPlayHere(ep) { return !!ep.v && !state.links[ep.key]; }
+  function loadYT() {
+    if (!ytApi) ytApi = new Promise((resolve, reject) => {
+      if (window.YT && window.YT.Player) { resolve(window.YT); return; }
+      window.onYouTubeIframeAPIReady = () => resolve(window.YT);
+      const sc = document.createElement("script");
+      sc.src = "https://www.youtube.com/iframe_api";
+      sc.onerror = () => { ytApi = null; reject(new Error("api")); };
+      document.head.append(sc);
+    });
+    return ytApi;
+  }
+  function getPlayer(firstId) {
+    if (!ytPlayer) ytPlayer = loadYT().then(YT => new Promise(resolve => {
+      const p = new YT.Player("plFrame", {
+        host: "https://www.youtube-nocookie.com", videoId: firstId,
+        playerVars: { autoplay: 1, rel: 0, playsinline: 1, hl: "es", modestbranding: 1 },
+        events: {
+          onReady: () => resolve(p),
+          onStateChange: e => { if (e.data === YT.PlayerState.ENDED) ended(); },
+          onError: e => plMessage(e.data === 101 || e.data === 150 ? "Este capítulo no deja verse fuera de YouTube." : "No se ha podido cargar el vídeo.", playing),
+        },
+      });
+    })).catch(e => { ytPlayer = null; throw e; });
+    return ytPlayer;
+  }
+  const nextPlayable = ep => EPISODES.slice(ep.gi + 1).find(canPlayHere) || null;
+  const prevPlayable = ep => EPISODES.slice(0, ep.gi).reverse().find(canPlayHere) || null;
+  function clearNext() { clearInterval(nextTimer); nextTimer = null; pl("plNextBox").hidden = true; }
+  function plMessage(text, ep) {
+    const box = pl("plMsg");
+    box.replaceChildren(h("span", null, text),
+      ep ? h("a", { class: "btn small", href: "https://www.youtube.com/watch?v=" + ep.v, target: "_blank", rel: "noopener" }, "Abrir en YouTube") : null);
+    box.hidden = false;
+  }
+  function updatePlayer(ep) {
+    const on = !!state.watched[ep.key], seen = pl("plSeen");
+    seen.setAttribute("aria-pressed", String(on));
+    seen.querySelector("span").textContent = on ? "Visto" : "Marcar como visto";
+    const prev = prevPlayable(ep), next = nextPlayable(ep);
+    pl("plPrev").disabled = !prev; pl("plNext").disabled = !next;
+    pl("plPrev").title = prev ? "Anterior: " + prev.title : "";
+    pl("plNext").title = next ? "Siguiente: " + next.title : "";
+  }
+  function play(ep) {
+    playing = ep; clearNext(); pl("plMsg").hidden = true;
+    setLast(ep.key);
+    if (epd.open) epd.close();
+    player.setAttribute("style", colorVars(ep.s));
+    pl("plTitle").textContent = ep.title;
+    pl("plSub").textContent = `${ep.s.label} · ${ep.s.name} · Episodio ${ep.n} · ${ep.code}`;
+    pl("plYT").href = "https://www.youtube.com/watch?v=" + ep.v;
+    updatePlayer(ep);
+    if (!player.open) { try { player.showModal(); } catch { player.setAttribute("open", ""); } }
+    renderHero(); rerenderSheet();
+    const fresh = !ytPlayer;
+    getPlayer(ep.v).then(p => { if (playing && (!fresh || playing !== ep)) p.loadVideoById(playing.v); })
+      .catch(() => plMessage("No se ha podido cargar el reproductor de YouTube. Comprueba la conexión.", ep));
+  }
+  function ended() {
+    const ep = playing;
+    if (!ep) return;
+    if (!state.watched[ep.key]) { setWatched(ep.key, true); renderHero(); renderStrip(); renderRows(); rerenderSheet(); }
+    updatePlayer(ep);
+    const next = nextPlayable(ep);
+    if (!next) return;
+    nextLeft = 8;
+    const say = () => { pl("plNextTxt").textContent = `Siguiente: «${next.title}» en ${nextLeft} s`; };
+    say(); pl("plNextBox").hidden = false;
+    pl("plNextGo").onclick = () => play(next);
+    clearInterval(nextTimer);
+    nextTimer = setInterval(() => { nextLeft--; if (nextLeft <= 0) { clearNext(); play(next); } else say(); }, 1000);
+  }
+  pl("plClose").innerHTML = ICON_CLOSE;
+  pl("plPrev").innerHTML = ICON_PREV;
+  pl("plNext").innerHTML = ICON_NEXT;
+  pl("plSeen").insertAdjacentHTML("afterbegin", ICON_BALL);
+  pl("plClose").addEventListener("click", () => player.close());
+  pl("plPrev").addEventListener("click", () => { const p = playing && prevPlayable(playing); if (p) play(p); });
+  pl("plNext").addEventListener("click", () => { const n = playing && nextPlayable(playing); if (n) play(n); });
+  pl("plNextCancel").addEventListener("click", clearNext);
+  pl("plSeen").addEventListener("click", () => {
+    if (!playing) return;
+    setWatched(playing.key, !state.watched[playing.key]);
+    updatePlayer(playing); renderHero(); renderStrip(); renderRows(); rerenderSheet();
+  });
+  pl("plInfo").addEventListener("click", () => { const ep = playing; player.close(); if (ep) openEpisode(ep); });
+  player.addEventListener("close", () => {
+    clearNext(); playing = null;
+    if (ytPlayer) ytPlayer.then(p => p.stopVideo()).catch(() => {});
+  });
+  player.addEventListener("click", e => { if (e.target === player) player.close(); });
+  document.addEventListener("click", e => {
+    const a = e.target.closest && e.target.closest("a[data-play]");
+    if (!a) return;
+    const ep = BY_KEY.get(a.getAttribute("data-play"));
+    if (ep && canPlayHere(ep)) { e.preventDefault(); play(ep); }
+  });
+
+  /* ---------- Progress transfer between devices ---------- */
+  function exportCode() {
+    const bytes = new Uint8Array(Math.ceil(EPISODES.length / 8));
+    EPISODES.forEach((e, i) => { if (state.watched[e.key]) bytes[i >> 3] |= 1 << (i & 7); });
+    let bin = "";
+    bytes.forEach(b => { bin += String.fromCharCode(b); });
+    const last = state.last ? BY_KEY.get(state.last).gi + 1 : 0;
+    return "MA1-" + last + "-" + btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  }
+  function importCode(code) {
+    const m = code.trim().match(/^MA1-(\d+)-([A-Za-z0-9_-]+)$/);
+    if (!m) return -1;
+    let b64 = m[2].replace(/-/g, "+").replace(/_/g, "/");
+    while (b64.length % 4) b64 += "=";
+    let bin;
+    try { bin = atob(b64); } catch { return -1; }
+    let added = 0;
+    EPISODES.forEach((e, i) => {
+      if ((bin.charCodeAt(i >> 3) >> (i & 7)) & 1 && !state.watched[e.key]) { state.watched[e.key] = 1; added++; }
+    });
+    const last = EPISODES[+m[1] - 1];
+    if (last && (!state.last || last.gi > BY_KEY.get(state.last).gi)) state.last = last.key;
+    persist(); renderAll();
+    return added;
+  }
+  const trCode = pl("trCode"), trMsg = pl("trMsg");
+  pl("trCopy").addEventListener("click", () => {
+    trCode.value = exportCode();
+    const fallback = () => { trCode.focus(); trCode.select(); trMsg.textContent = "Código listo: cópialo desde la casilla."; };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(trCode.value).then(() => { trMsg.textContent = "Código copiado. Pégalo en el otro dispositivo, en esta misma sección."; }, fallback);
+    } else fallback();
+  });
+  pl("trForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const n = importCode(pl("trIn").value);
+    trMsg.textContent = n < 0 ? "Ese código no es válido. Cópialo entero, empieza por MA1-."
+      : n === 0 ? "Listo. Ya tenías todos esos capítulos marcados."
+      : `Listo. Se han añadido ${fmt(n)} capítulos vistos.`;
+    if (n >= 0) pl("trIn").value = "";
+  });
+
+  /* ---------- Wiring ---------- */
+  function rerenderSheet() {
+    if (!openId || !sheet.open) return;
+    const scroll = sheet.querySelector(".eps")?.scrollTop || 0;
+    openSeason(openId);
+    const list = sheet.querySelector(".eps"); if (list) list.scrollTop = scroll;
+  }
+  function renderAll() {
+    renderHero(); renderStrip(); renderRows(); rerenderSheet();
+    if (epdKey && epd.open) {
+      const scroll = epd.scrollTop; openEpisode(BY_KEY.get(epdKey)); epd.scrollTop = scroll;
+    }
+  }
+  document.querySelectorAll(".chip").forEach(chip => chip.addEventListener("click", () => {
+    filter = chip.dataset.filter;
+    document.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", String(c === chip)));
+    renderRows();
+  }));
+  const q = document.getElementById("q");
+  let qTimer = null;
+  q.addEventListener("input", () => { clearTimeout(qTimer); qTimer = setTimeout(() => { query = q.value.trim(); activeTag = null; hitLimit = 40; renderRows(); }, 120); });
+  document.getElementById("searchForm").addEventListener("submit", e => {
+    e.preventDefault();
+    query = q.value.trim(); activeTag = null;
+    const hits = episodeMatches();
+    if (hits.length === 1) { openEpisode(hits[0]); return; }
+    renderRows();
+  });
+
+  state = loadLocal() || state;
+  renderIntro();
+  renderRegions();
+  renderAll();
+  initCloud();
+})();
+</script>
+
+</body>
+</html>
