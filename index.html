@@ -533,6 +533,7 @@ input.ball:checked {
   .leds { display: none; }
   .bar .brand .leds { display: none; }
 }
+.toast[popover]:not(:popover-open) { display: none; }
 
 /* ===== Pokédex ===== */
 :root { --stat: #5b9cff; }
@@ -622,6 +623,38 @@ input.ball:checked {
   .stat { grid-template-columns: 92px 34px minmax(0, 1fr); }
   .views { order: 2; }
   .view-btn { padding: 6px 12px; }
+}
+
+/* Classes (legendario, singular…) */
+.dex-card { position: relative; }
+.dex-kind { position: absolute; top: 8px; right: 8px; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+.kinds { display: flex; flex-wrap: wrap; gap: 5px; }
+.kind { font-size: 10.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; line-height: 1.5; padding: 1px 8px; border-radius: 999px; color: #241a00; background: linear-gradient(135deg, #ffe27a, #f2b705); box-shadow: inset 0 0 0 1px rgba(0,0,0,.15); }
+.kind-sing { color: #2d0a38; background: linear-gradient(135deg, #ffc8f4, #d58cf0); }
+.kind-ue { color: #062a3d; background: linear-gradient(135deg, #b9f1ff, #6cc6f5); }
+.kind-par { color: #1e2024; background: linear-gradient(135deg, #e4e7ec, #a9b0bb); }
+.kind-ini { color: #0f2e0f; background: linear-gradient(135deg, #c9f5b8, #7fd36a); }
+.pkd .dex-text .kind { font-size: 11.5px; padding: 2px 10px; }
+
+/* Wider cards; Pokémon card in two columns on wide screens */
+@media (min-width: 601px) {
+  dialog.epd { width: min(880px, calc(100vw - 32px)); }
+  dialog.pkd { width: min(1080px, calc(100vw - 32px)); }
+}
+.pkd .dex-main { grid-template-columns: minmax(0, 360px) minmax(0, 1fr); }
+.pkd .screen-img { position: relative; aspect-ratio: 4 / 3; display: block; }
+.pkd .pk-art { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; padding: 5%; box-sizing: border-box; object-fit: contain; }
+.pkd .screen-img .pk-ph { position: absolute; inset: 0; margin: auto; }
+@media (min-width: 860px) {
+  .pkd .epd-body { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 36px; row-gap: 26px; align-items: start; }
+  .pkd .epd-sec.wide, .pkd .epd-src { grid-column: 1 / -1; }
+}
+@media (max-width: 760px) {
+  .pkd .dex-main { grid-template-columns: minmax(0, 1fr); }
+  .pkd .screen { max-width: 380px; }
+}
+@media (max-width: 600px) {
+  .dex-kind { position: static; align-items: center; }
 }
 
 /* ===== Built-in player: a Pokédex with a big screen ===== */
@@ -774,6 +807,7 @@ dialog.player .btn svg { width: 18px; height: 18px; }
   </div>
   <div class="dex-filters" id="dexTypes" role="group" aria-label="Filtrar por tipo"></div>
   <div class="dex-filters" id="dexGens" role="group" aria-label="Filtrar por generación"></div>
+  <div class="dex-filters" id="dexKinds" role="group" aria-label="Filtrar por clase de Pokémon"></div>
   <p class="hits-count" id="dexCount"></p>
   <div class="dex-grid" id="dexGrid"><p class="epd-loading loading">Cargando la Pokédex…</p></div>
   <footer>
@@ -1482,6 +1516,9 @@ dialog.player .btn svg { width: 18px; height: 18px; }
   const GEN_REGION = ["Kanto", "Johto", "Hoenn", "Sinnoh", "Teselia", "Kalos", "Alola", "Galar y Hisui", "Paldea"];
   const STAT_NAMES = ["PS", "Ataque", "Defensa", "At. especial", "Def. especial", "Velocidad"];
   const pad4 = n => String(n).padStart(4, "0");
+  const KIND_LABEL = { leg: "Legendario", sing: "Singular", ue: "Ultraente", par: "Paradoja", ini: "Inicial" };
+  const KIND_FILTER = [[null, "Todas las clases"], ["leg", "Legendarios"], ["sing", "Singulares"], ["ue", "Ultraentes"], ["par", "Paradoja"], ["ini", "Iniciales"]];
+  const kindPill = k => h("span", { class: "kind kind-" + k }, KIND_LABEL[k]);
   const dexKey = name => norm(name).replace(/\s+/g, " ").trim();
   function inkFor(hex) {
     const c = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255).map(v => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
@@ -1509,7 +1546,7 @@ dialog.player .btn svg { width: 18px; height: 18px; }
     return img;
   }
 
-  let DEX = null, dexP = null, dexBuilt = false, dexType = null, dexGen = null, pTagMap = null;
+  let DEX = null, dexP = null, dexBuilt = false, dexType = null, dexGen = null, dexKind = null, pTagMap = null;
   const DEX_BY_NAME = new Map();
   function loadDex() {
     if (!dexP) dexP = fetch("info/dex.json").then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(list => {
@@ -1531,15 +1568,19 @@ dialog.player .btn svg { width: 18px; height: 18px; }
   function renderDexFilters() {
     filterChips("dexTypes", [[null, "Todos los tipos"], ...TYPES.map(t => [t, t, `--tc:${TYPE_COLORS[t]};--ti:${inkFor(TYPE_COLORS[t])}`])], dexType, v => { dexType = v; renderDexFilters(); filterDex(); });
     filterChips("dexGens", [[null, "Todas las generaciones"], ...GEN_REGION.map((r, i) => [i + 1, `${i + 1}.ª · ${r}`])], dexGen, v => { dexGen = v; renderDexFilters(); filterDex(); });
+    filterChips("dexKinds", KIND_FILTER, dexKind, v => { dexKind = v; renderDexFilters(); filterDex(); });
   }
   function buildDex() {
     if (dexBuilt) { filterDex(); return; }
     dexBuilt = true;
     renderDexFilters();
     document.getElementById("dexGrid").replaceChildren(...DEX.map(p => {
-      p.hay = norm(p.name);
+      p.k = p.k || [];
+      p.hay = norm(p.name + " " + p.k.map(k => KIND_LABEL[k]).join(" "));
       p.card = h("button", { class: "dex-card", type: "button", style: `--t1:${TYPE_COLORS[p.t[0]]};--t2:${TYPE_COLORS[p.t[1] || p.t[0]]}`, onclick: () => openPokemon(p) },
-        h("span", { class: "dex-no" }, "Nº " + pad4(p.n)), pkPic(p, false), h("b", null, p.name), h("span", { class: "types" }, p.t.map(typePill)));
+        h("span", { class: "dex-no" }, "Nº " + pad4(p.n)),
+        p.k.length ? h("span", { class: "dex-kind" }, p.k.filter(k => k !== "ini").map(kindPill)) : null,
+        pkPic(p, false), h("b", null, p.name), h("span", { class: "types" }, p.t.map(typePill)));
       return p.card;
     }));
     filterDex();
@@ -1552,7 +1593,7 @@ dialog.player .btn svg { width: 18px; height: 18px; }
     let shown = 0;
     for (const p of DEX) {
       const ok = (!qv || (asNum ? p.n === asNum : p.hay.includes(qv))) && (!dexType || p.t.includes(dexType))
-        && (!dexGen || p.gen === dexGen) && (!onlyAnime || !!pTag(p));
+        && (!dexGen || p.gen === dexGen) && (!dexKind || p.k.includes(dexKind)) && (!onlyAnime || !!pTag(p));
       p.card.hidden = !ok;
       if (ok) shown++;
     }
@@ -1561,6 +1602,7 @@ dialog.player .btn svg { width: 18px; height: 18px; }
 
   const pkd = document.getElementById("pkd");
   const dexSec = (title, ...content) => h("section", { class: "epd-sec" }, h("h3", null, title), ...content);
+  const dexSecWide = (title, ...content) => h("section", { class: "epd-sec wide" }, h("h3", null, title), ...content);
   const dexRow = (label, value) => h("div", null, h("dt", null, label), h("dd", null, value));
   function statBars(st) {
     const total = st.reduce((a, b) => a + b, 0);
@@ -1613,7 +1655,8 @@ dialog.player .btn svg { width: 18px; height: 18px; }
           h("div", { class: "dex-text" },
             h("div", { class: "eyebrow" }, "Pokémon " + p.cat),
             h("h2", { id: "pkdTitle" }, p.name),
-            h("div", { class: "types" }, p.t.map(typePill)))),
+            h("div", { class: "types" }, p.t.map(typePill)),
+            (p.k || []).length ? h("div", { class: "kinds" }, p.k.map(kindPill)) : null)),
         h("button", { class: "close", type: "button", "aria-label": "Cerrar", html: ICON_CLOSE, onclick: () => pkd.close() })),
       h("div", { class: "epd-actions" }, seeEps,
         h("a", { class: "btn ghost", href: wikiUrl(p.page), target: "_blank", rel: "noopener" }, "Ficha en WikiDex"),
@@ -1633,8 +1676,8 @@ dialog.player .btn svg { width: 18px; height: 18px; }
           dexRow("Generación", `${p.gen}.ª · ${GEN_REGION[p.gen - 1] || ""}`))),
         dexSec("Estadísticas base", statBars(p.st)),
         dexSec("Debilidades y resistencias", ...weakBlock(p.t)),
-        dexSec("Evolución", evoBlock(p)),
-        dexSec("Con Ash en el anime", ...[].concat(animeBlock(p, tag, eps))),
+        dexSecWide("Evolución", evoBlock(p)),
+        dexSecWide("Con Ash en el anime", ...[].concat(animeBlock(p, tag, eps))),
         h("p", { class: "epd-src" }, "Datos de ", h("a", { href: wikiUrl(p.page), target: "_blank", rel: "noopener" }, "WikiDex"),
           ", con licencia ", h("a", { href: "https://creativecommons.org/licenses/by-sa/3.0/deed.es", target: "_blank", rel: "noopener" }, "CC BY-SA 3.0"),
           SPRITES ? ". Imágenes del repositorio de sprites de PokeAPI." : ".")));
